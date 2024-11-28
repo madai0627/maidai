@@ -1,10 +1,13 @@
-<script setup>
-import Home from "./components/home.vue"
-</script>
-
 <template>
-  <Home />
+  <router-view></router-view>
 </template>
 
-<style scoped>
+<script setup>
+</script>
+
+<style>
+body {
+ margin: 0;
+}
+
 </style>
