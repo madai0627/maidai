@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CatInfoModule } from './cat_info/cat_info.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { CatInfoModule } from './cat_info/cat_info.module';
       autoLoadEntities: true,
     }),
     CatInfoModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

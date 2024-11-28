@@ -11,19 +11,19 @@ const routes = [
     path: '/cat',
     component: Layout,
     redirect: '/cat/cat-type',
-    meta: { title: '宠物管理', icon: 'Setting' },
+    meta: { title: '宠物管理', icon: 'TrophyBase' },
     children: [
       {
         path: 'cat-type',
         component: () => import('@/views/CatType.vue'),
         name: 'CatType',
-        meta: { title: '分类管理', icon: 'Odometer' }
+        meta: { title: '分类管理', icon: 'FolderChecked' }
       },
       {
         path: 'cat-info',
         component: () => import('@/views/CatInfo.vue'),
         name: 'CatInfo',
-        meta: { title: '猫猫管理', icon: 'Odometer' }
+        meta: { title: '猫猫管理', icon: 'Watermelon' }
       },
     ]
   },
@@ -45,7 +45,11 @@ const routes = [
         meta: { title: '角色管理', icon: 'UserFilled' }
       }
     ]
-  }
+  },
+  {
+    path: '/login',
+    component: () => import('@/views/login/index.vue'),
+  },
 ]
 
 const router = createRouter({

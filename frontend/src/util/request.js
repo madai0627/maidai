@@ -8,7 +8,7 @@ const service = axios.create({
 service.interceptors.response.use(
   function (response) {
     const dataAxios = response;
-    return dataAxios;
+    return dataAxios.data;
   },
   function (error) {
     return Promise.reject(error);

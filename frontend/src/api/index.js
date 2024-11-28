@@ -11,5 +11,17 @@ export const editCatSync = (id, data) =>
   http.patch(`/api/cat-info/update-cat?id=${id}`, data);
 
 export const searchCatSync = (id) => {
-  http.get(`/api/cat-info/search-cat?id=${id}`);
+  return http.get(`/api/cat-info/search-cat?id=${id}`);
+}
+
+export const registerSync = (data) => {
+  return http.post('/api/users/register', data)
+}
+
+export const loginSync = (data) => {
+  return http.post('/api/users/login', data)
+}
+
+export const logoutSync = () => {
+  return http.get('/api/users/logout')
 }

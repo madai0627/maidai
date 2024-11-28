@@ -2,13 +2,15 @@
   <div class="navbar">
     <div class="left">
       <el-button @click="toggleSideBar">
-        <el-icon><Fold /></el-icon>
+        <el-icon>
+          <Fold />
+        </el-icon>
       </el-button>
     </div>
     <div class="right">
       <el-dropdown>
         <span class="user-info">
-          Admin
+          {{ username }}
           <el-icon class="el-icon--right">
             <arrow-down />
           </el-icon>
@@ -16,7 +18,7 @@
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item>个人信息</el-dropdown-item>
-            <el-dropdown-item divided>退出登录</el-dropdown-item>
+            <el-dropdown-item divided @click="logout">退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -25,15 +27,30 @@
 </template>
 
 <script setup>
-import {Fold, ArrowDown} from '@element-plus/icons-vue'
-import {defineEmits} from 'vue'
+import { Fold, ArrowDown } from '@element-plus/icons-vue'
+import { ref } from 'vue'
 import userStore from '@/store'
+import { logoutSync } from '@/api/index'
 const useUserStore = userStore()
-
-console.log(useUserStore.isCloseSide,'==');
 const toggleSideBar = () => {
   useUserStore.isCloseSide = !useUserStore.isCloseSide
-  console.log(useUserStore.isCloseSide,'==22222');
+}
+
+const username = ref('')
+username.value = JSON.parse(localStorage.getItem('userInfo'))?.username
+if (!username.value) {
+  window.location.href = '/login'
+}
+
+const logout = () => {
+  logoutSync().then(res=>{
+    if(res.code != 0) {
+      alert(res.msg)
+      return
+    }
+    localStorage.removeItem('userInfo')
+    window.location.href = '/login'
+  })
 }
 </script>
 
