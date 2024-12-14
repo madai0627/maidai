@@ -38,7 +38,10 @@ const toggleSideBar = () => {
 
 const username = ref('')
 username.value = JSON.parse(localStorage.getItem('userInfo'))?.username
-if (!username.value) {
+let timeTemp = JSON.parse(localStorage.getItem('userInfo'))?.timeTemp
+let currentTime = new Date().getTime()
+if (!username.value || currentTime - timeTemp > 12 * 60 * 60 * 1000) {
+  localStorage.removeItem('userInfo')
   window.location.href = '/login'
 }
 

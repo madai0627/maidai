@@ -25,3 +25,27 @@ export const loginSync = (data) => {
 export const logoutSync = () => {
   return http.get('/api/users/logout')
 }
+
+export const getUserListSync = ()=> {
+  return http.get('/api/users/user-list')
+}
+
+export const setRoleSync = (data)=> {
+  return http.post('/api/users/set-role', data)
+}
+
+export const addRoleSync = (data)=> {
+  return http.post('/api/role/add-role', data)
+}
+
+export const getRoleSync = ()=> {
+  return http.get('/api/role/get-role')
+}
+
+export const editRoleSync = (id,data)=>{
+  return http.patch('/api/role/edit-role?id='+ id, data)
+}
+
+export const deleteRoleSync = (id)=>{
+  return http.delete('/api/role/delete-role?id='+ id)
+}

@@ -63,4 +63,25 @@ export class UsersService {
       data: null
     }
   }
+
+  async findAll() {
+    const userList = await this.usersRepository.find();
+    return {
+      code: 0,
+      data: userList,
+      msg: 'success'
+    }
+  }
+
+  async remove(id: number) {
+    return await this.usersRepository.delete(id);
+  }
+
+  async setRole(id: number, role: string) {
+    await this.usersRepository.update(id, { role });
+    return {
+      code: 0,
+      msg: '分配成功',
+    }
+  }
 }

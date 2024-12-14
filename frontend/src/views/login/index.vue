@@ -100,7 +100,8 @@ const login = () => {
       loginerr.value = true
       return
     }
-    localStorage.setItem('userInfo',JSON.stringify(res.data))
+    let time = new Date().getTime()
+    localStorage.setItem('userInfo',JSON.stringify({...res.data,timeTemp: time}))
     window.location.href = '/'
   })
 }

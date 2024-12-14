@@ -1,34 +1,31 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('cat_info')
-export class CatInfo {
+@Entity('cat_type')
+export class CatType {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  name: string;
+  type_name: string;
 
   @Column()
   img_url: string;
 
   @Column()
-  age: string;
+  desc: string;
 
   @Column()
-  type: string;
-
-  @Column()
-  type_id: number;
+  body_size: string;
 
   @Column()
   color: string;
 
   @Column()
-  weight: number;
+  average_life: string;
 
   @Column()
-  desc: number;
+  origin: string;
 
   @Column()
-  bithday: Date;
+  created_at: Date;
 }

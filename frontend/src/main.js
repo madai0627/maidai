@@ -7,11 +7,13 @@ import 'element-plus/dist/index.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import { createPinia } from 'pinia'
 import jQuery from 'jquery'
+import Util from '@/util/util'
 
 window.$ = window.jQuery = jQuery
 
 const app = createApp(App)
 const pinia = createPinia()
+window.Util = Util
 
 // 注册 Element Plus 图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {

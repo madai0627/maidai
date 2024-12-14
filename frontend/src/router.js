@@ -34,13 +34,13 @@ const routes = [
     children: [
       {
         path: 'user',
-        component: () => import('@/views/system/user.vue'),
+        component: () => import('@/views/system/User.vue'),
         name: 'User',
         meta: { title: '用户管理', icon: 'User' }
       },
       {
         path: 'role',
-        component: () => import('@/views/system/role.vue'),
+        component: () => import('@/views/system/Role.vue'),
         name: 'Role',
         meta: { title: '角色管理', icon: 'UserFilled' }
       }

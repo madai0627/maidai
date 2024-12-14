@@ -1,9 +1,11 @@
 export class CreateCatInfoDto {
-  breed: string;
-  image?: string;
-  description: string;
-  body_size: string;
+  name: string;
+  img_url?: string;
+  age: string;
+  type: string;
+  type_id: number;
   color: string;
-  average_life: number;
-  breed_id: number
+  weight: number;
+  desc: number;
+  bithday: Date;
 }

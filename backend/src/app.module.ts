@@ -4,6 +4,8 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CatInfoModule } from './cat_info/cat_info.module';
 import { UsersModule } from './users/users.module';
+import { RoleModule } from './role/role.module';
+import { CatTypeModule } from './cat_type/cat_type.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { UsersModule } from './users/users.module';
     }),
     CatInfoModule,
     UsersModule,
+    RoleModule,
+    CatTypeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
