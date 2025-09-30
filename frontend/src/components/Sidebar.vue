@@ -48,7 +48,7 @@ const router = useRouter()
 const useUserStore = userStore()
 
 const routes = computed(() => {
-  return router.options.routes
+  return router.options.routes.filter(item => !item.hidden)
 })
 
 const activeMenu = computed(() => {

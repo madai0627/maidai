@@ -1,7 +1,16 @@
-# Vue 3 + Vite
+## 后台系统：
+* 用户管理（基础信息、权限分组）
+* 日记模块（文字 / 图片日记、情绪标签）
+* 待办清单（任务 CRUD、提醒设置）
+* 财务管理（收支记录、分类统计）
+* 地址簿（联系人管理、分组）
+* 读书笔记（书籍信息、摘抄、心得）
+* 影视清单（观影记录、评分、短评）
+* 配置中心（全局参数、个性化设置）
+## 前端门户：
+* 首页仪表盘（各模块数据概览）
+* 各模块独立页面（对应后台功能）
+* 数据统计页（收支图表、完成率等）
+* 个人设置页（主题切换、隐私设置）
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
-
-## Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+技术亮点：模块间低耦合设计、数据可视化（ECharts）、本地存储与云端同步、主题切换功能。

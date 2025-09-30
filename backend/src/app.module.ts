@@ -6,6 +6,9 @@ import { CatInfoModule } from './cat_info/cat_info.module';
 import { UsersModule } from './users/users.module';
 import { RoleModule } from './role/role.module';
 import { CatTypeModule } from './cat_type/cat_type.module';
+import { FinancePurposeModule } from './finance_purpose/finance_purpose.module';
+import { FinanceBudgetModule } from './finance_budget/finance_budget.module';
+import { FinanceRecordModule } from './finance_record/finance_record.module';
 
 @Module({
   imports: [
@@ -25,6 +28,9 @@ import { CatTypeModule } from './cat_type/cat_type.module';
     UsersModule,
     RoleModule,
     CatTypeModule,
+    FinancePurposeModule,
+    FinanceBudgetModule,
+    FinanceRecordModule,
   ],
   controllers: [AppController],
   providers: [AppService],

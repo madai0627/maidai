@@ -5,7 +5,20 @@ const routes = [
   {
     path: '/',
     component: () => import('@/views/Index.vue'),
-    meta: { title: '首页', icon: 'HomeFilled' },
+    hidden: true,
+    name: 'Index'
+  },
+  {
+    path: '/index-cat',
+    component: () => import('@/views/index-cat/Index.vue'),
+    hidden: true,
+    name: 'IndexCat'
+  },
+  {
+    path: '/index-finance',
+    component: () => import('@/views/index-finance/Index.vue'),
+    hidden: true,
+    name: 'IndexFinance'
   },
   {
     path: '/cat',
@@ -15,16 +28,41 @@ const routes = [
     children: [
       {
         path: 'cat-type',
-        component: () => import('@/views/CatType.vue'),
+        component: () => import('@/views/cat/CatType.vue'),
         name: 'CatType',
         meta: { title: '分类管理', icon: 'FolderChecked' }
       },
       {
         path: 'cat-info',
-        component: () => import('@/views/CatInfo.vue'),
+        component: () => import('@/views/cat/CatInfo.vue'),
         name: 'CatInfo',
         meta: { title: '猫猫管理', icon: 'Watermelon' }
       },
+    ]
+  },
+  {
+    path: '/finance',
+    component: Layout,
+    meta: { title: '财务管理', icon: 'Coin' },
+    children: [
+      {
+        path: 'purpose',
+        component: () => import('@/views/finance/FinancePurpose.vue'),
+        name: 'FinancePurpose',
+        meta: { title: '用途管理', icon: 'Coin' }
+      },
+      {
+        path: 'budget',
+        component: () => import('@/views/finance/FinanceBudget.vue'),
+        name: 'FinanceBudget',
+        meta: { title: '预算管理', icon: 'Tickets' }
+      },
+      {
+        path: 'record',
+        component: () => import('@/views/finance/FinanceRecord.vue'),
+        name: 'FinanceRecord',
+        meta: { title: '记录管理', icon: 'Document' }
+      }
     ]
   },
   {
