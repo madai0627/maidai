@@ -27,7 +27,7 @@ export class CatInfo {
   weight: number;
 
   @Column()
-  desc: number;
+  desc: string;
 
   @Column()
   bithday: Date;

@@ -4,7 +4,6 @@ import {
   Post,
   Body,
   Patch,
-  Param,
   Delete,
   Query,
 } from '@nestjs/common';
@@ -17,27 +16,30 @@ export class CatInfoController {
   constructor(private readonly catInfoService: CatInfoService) {}
 
   @Post('save-cat')
-  create(@Body() createCatInfoDto: CreateCatInfoDto) {
-    return this.catInfoService.create(createCatInfoDto);
+  async create(@Body() createCatInfoDto: CreateCatInfoDto) {
+    return await this.catInfoService.create(createCatInfoDto);
   }
 
   @Get('get-cat')
-  findAll() {
-    return this.catInfoService.findAll();
+  async findAll() {
+    return await this.catInfoService.findAll();
   }
 
   @Get('search-cat')
-  findOne(@Query('id') id: number) {
-    return this.catInfoService.findOne(+id);
+  async findOne(@Query('id') id: number) {
+    return await this.catInfoService.findOne(+id);
   }
 
   @Patch('update-cat')
-  update(@Query('id') id: number, @Body() updateCatInfoDto: UpdateCatInfoDto) {
-    return this.catInfoService.update(+id, updateCatInfoDto);
+  async update(
+    @Query('id') id: number,
+    @Body() updateCatInfoDto: UpdateCatInfoDto,
+  ) {
+    return await this.catInfoService.update(+id, updateCatInfoDto);
   }
 
   @Delete('remove-cat')
-  remove(@Query('id') id: number) {
-    return this.catInfoService.remove(+id);
+  async remove(@Query('id') id: number) {
+    return await this.catInfoService.remove(+id);
   }
 }

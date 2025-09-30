@@ -1,11 +1,11 @@
 export class CreateCatInfoDto {
   name: string;
   img_url?: string;
-  age: string;
+  age?: string;
   type: string;
   type_id: number;
   color: string;
   weight: number;
-  desc: number;
+  desc: string;
   bithday: Date;
 }

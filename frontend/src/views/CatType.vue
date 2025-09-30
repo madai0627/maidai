@@ -12,7 +12,7 @@
     <el-table-column prop="color" label="颜色" width="120" align="center" />
     <el-table-column prop="average_life" label="平均寿命" width="120" align="center" />
     <el-table-column prop="origin" label="原产地" width="150" align="center" />
-    <el-table-column prop="desc" label="描述" width="200" align="center">
+    <el-table-column prop="desc" label="描述" min-width="300" align="center">
       <template #default="scope">
         <div class="desc" v-html="scope.row.desc" :title="scope.row.desc"></div>
       </template>
