@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -13,7 +12,9 @@ export class UsersController {
   }
 
   @Post('login')
-  async login(@Body() {username, password}: {username: string, password:string}) {
+  async login(
+    @Body() { username, password }: { username: string; password: string },
+  ) {
     return await this.usersService.login(username, password);
   }
 
@@ -32,8 +33,15 @@ export class UsersController {
     return await this.usersService.remove(+id);
   }
 
+  @Post('update-user')
+  async update(
+    @Body() { id, ...updateData }: { id: number; [key: string]: any },
+  ) {
+    return await this.usersService.update(id, updateData);
+  }
+
   @Post('set-role')
-  async setRole(@Body() {id, role}: {id: number, role:string}) {
+  async setRole(@Body() { id, role }: { id: number; role: string }) {
     return await this.usersService.setRole(id, role);
   }
 }

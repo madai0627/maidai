@@ -34,6 +34,14 @@ export const setRoleSync = (data)=> {
   return http.post('/api/users/set-role', data)
 }
 
+export const removeUserSync = (id) => {
+  return http.delete(`/api/users/remove-user?id=${id}`)
+}
+
+export const updateUserSync = (data) => {
+  return http.post('/api/users/update-user', data)
+}
+
 export const addRoleSync = (data)=> {
   return http.post('/api/role/add-role', data)
 }
@@ -48,4 +56,21 @@ export const editRoleSync = (id,data)=>{
 
 export const deleteRoleSync = (id)=>{
   return http.delete('/api/role/delete-role?id='+ id)
+}
+
+// 分类管理API
+export const getCatTypeSync = () => {
+  return http.get('/api/cat-type/get-cat-type')
+}
+
+export const addCatTypeSync = (data) => {
+  return http.post('/api/cat-type/add-cat-type', data)
+}
+
+export const editCatTypeSync = (data) => {
+  return http.patch('/api/cat-type/edit-cat-type', data)
+}
+
+export const deleteCatTypeSync = (id) => {
+  return http.delete(`/api/cat-type/delete-cat-type?id=${id}`)
 }

@@ -4,7 +4,6 @@ export class CreateCatTypeDto {
   desc: string;
   body_size: string;
   color: string;
-  average_life: number;
+  average_life: string;
   origin: string;
-  created_at: Date
 }

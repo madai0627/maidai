@@ -1,26 +1,86 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CatType } from './entities/cat_type.entity';
 import { CreateCatTypeDto } from './dto/create-cat_type.dto';
 import { UpdateCatTypeDto } from './dto/update-cat_type.dto';
 
 @Injectable()
 export class CatTypeService {
-  create(createCatTypeDto: CreateCatTypeDto) {
-    return 'This action adds a new catType';
+  constructor(
+    @InjectRepository(CatType)
+    private catTypeRepository: Repository<CatType>,
+  ) {}
+
+  async create(createCatTypeDto: CreateCatTypeDto) {
+    const catType = this.catTypeRepository.create(createCatTypeDto);
+    await this.catTypeRepository.save(catType);
+    return {
+      code: 0,
+      msg: '添加成功',
+      data: catType,
+    };
   }
 
-  findAll() {
-    return `This action returns all catType`;
+  async findAll() {
+    const catTypes = await this.catTypeRepository.find();
+    return {
+      code: 0,
+      msg: 'success',
+      data: catTypes,
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} catType`;
+  async findOne(id: number) {
+    const catType = await this.catTypeRepository.findOneBy({ id });
+    if (!catType) {
+      return {
+        code: 404,
+        msg: '分类不存在',
+        data: null,
+      };
+    }
+    return {
+      code: 0,
+      msg: 'success',
+      data: catType,
+    };
   }
 
-  update(id: number, updateCatTypeDto: UpdateCatTypeDto) {
-    return `This action updates a #${id} catType`;
+  async update(id: number, updateCatTypeDto: UpdateCatTypeDto) {
+    const catType = await this.catTypeRepository.findOneBy({ id });
+    if (!catType) {
+      return {
+        code: 404,
+        msg: '分类不存在',
+        data: null,
+      };
+    }
+
+    await this.catTypeRepository.update(id, updateCatTypeDto);
+    const updatedCatType = await this.catTypeRepository.findOneBy({ id });
+    return {
+      code: 0,
+      msg: '更新成功',
+      data: updatedCatType,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} catType`;
+  async remove(id: number) {
+    const catType = await this.catTypeRepository.findOneBy({ id });
+    if (!catType) {
+      return {
+        code: 404,
+        msg: '分类不存在',
+        data: null,
+      };
+    }
+
+    await this.catTypeRepository.delete(id);
+    return {
+      code: 0,
+      msg: '删除成功',
+      data: null,
+    };
   }
 }

@@ -14,54 +14,54 @@ export class UsersService {
   ) {}
 
   async register(createUserDto: CreateUserDto) {
-    const username = createUserDto.username
-    const password = createUserDto.password
+    const username = createUserDto.username;
     const currentUser = await this.usersRepository.findOneBy({ username });
-    if(currentUser) {
+    if (currentUser) {
       return {
         code: 400,
         msg: '用户名已存在',
-        data: null
-      }
+        data: null,
+      };
     }
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
-    createUserDto.created_at = new Date()
+
     const user = this.usersRepository.create({
-      ...createUserDto,
+      username: createUserDto.username,
       password: hashedPassword,
+      role: createUserDto.role || 'user', // 如果没有传递role，默认为'user'
     });
-    await this.usersRepository.save(user)
+    await this.usersRepository.save(user);
     const userSuccess = await this.usersRepository.findOneBy({ username });
     return {
       code: 0,
       msg: '注册成功',
-      data: userSuccess
-    }
+      data: userSuccess,
+    };
   }
 
   async login(username: string, password: string) {
     const user = await this.usersRepository.findOneBy({ username });
-    if(user && await bcrypt.compare(password, user.password)) {
+    if (user && (await bcrypt.compare(password, user.password))) {
       return {
         code: 0,
         msg: '登录成功',
-        data: user
-      }
+        data: user,
+      };
     }
     return {
       code: 400,
       msg: '用户名或密码错误',
-      data: null
-    }
+      data: null,
+    };
   }
 
   async logout() {
     return {
       code: 0,
       msg: '退出成功',
-      data: null
-    }
+      data: null,
+    };
   }
 
   async findAll() {
@@ -69,12 +69,51 @@ export class UsersService {
     return {
       code: 0,
       data: userList,
-      msg: 'success'
-    }
+      msg: 'success',
+    };
   }
 
   async remove(id: number) {
-    return await this.usersRepository.delete(id);
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) {
+      return {
+        code: 404,
+        msg: '用户不存在',
+        data: null,
+      };
+    }
+
+    await this.usersRepository.delete(id);
+    return {
+      code: 0,
+      msg: '删除成功',
+      data: null,
+    };
+  }
+
+  async update(id: number, updateUserDto: any) {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) {
+      return {
+        code: 404,
+        msg: '用户不存在',
+        data: null,
+      };
+    }
+
+    // 如果更新了密码，需要重新加密
+    if (updateUserDto.password) {
+      const salt = await bcrypt.genSalt();
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, salt);
+    }
+
+    await this.usersRepository.update(id, updateUserDto);
+    const updatedUser = await this.usersRepository.findOneBy({ id });
+    return {
+      code: 0,
+      msg: '更新成功',
+      data: updatedUser,
+    };
   }
 
   async setRole(id: number, role: string) {
@@ -82,6 +121,6 @@ export class UsersService {
     return {
       code: 0,
       msg: '分配成功',
-    }
+    };
   }
 }

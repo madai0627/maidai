@@ -11,7 +11,7 @@
         <el-button link type="primary" size="small" @click="editRole(scope.row)">
           编辑
         </el-button>
-        <el-button link type="primary" size="small" @click="deleteRole(scope.row.id)">
+        <el-button link type="danger" size="small" @click="deleteRole(scope.row.id)">
           删除
         </el-button>
       </template>
@@ -42,8 +42,9 @@
 </template>
 
 <script setup>
-import { ref,onMounted,reactive } from 'vue';
-import { getRoleSync,addRoleSync,deleteRoleSync,editRoleSync } from '@/api/index.js';
+import { ref, onMounted, reactive } from 'vue';
+import { getRoleSync, addRoleSync, deleteRoleSync, editRoleSync } from '@/api/index.js';
+import { ElMessageBox, ElMessage } from 'element-plus';
 
 
 const roleList = ref([])
@@ -79,7 +80,8 @@ onMounted(() => {
 });
 const getRoleList = async () => {
   const res = await getRoleSync();
-  if(res.code != 0) {
+  if (res.code != 0) {
+    ElMessage.error(res.msg)
     return
   }
   roleList.value = res.data;
@@ -94,42 +96,58 @@ const addrole = () => {
   form.value = JSON.parse(JSON.stringify(initForm.value))
 }
 
-const handleClose = ()=> {
+const handleClose = () => {
   showDialog.value = false
 }
 
 const confirm = () => {
-  if(dialogTitle.value == '添加角色') {
+  if (dialogTitle.value == '添加角色') {
     addRoleSync(form.value).then(res => {
-      if(res.code != 0) {
+      if (res.code != 0) {
         return
       }
       getRoleList()
       showDialog.value = false
+      ElMessage.success('添加成功')
+    }).catch(() => {
+      ElMessage.error('添加失败')
     })
   } else {
     editRoleSync(form.value.id, form.value).then(res => {
-      if(res.code != 0) {
+      if (res.code != 0) {
         return
       }
       getRoleList()
       showDialog.value = false
+      ElMessage.success('编辑成功')
+    }).catch(() => {
+      ElMessage.error('编辑失败')
     })
   }
 
 }
 
-const deleteRole = (id)=> {
-  deleteRoleSync(id).then(res => {
-    if(res.code != 0) {
-      return
-    }
-    getRoleList()
+const deleteRole = (id) => {
+  ElMessageBox.confirm('确定删除该角色吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    deleteRoleSync(id).then(res => {
+      if (res.code != 0) {
+        ElMessage.error(res.msg)
+        return
+      }
+      getRoleList()
+      ElMessage.success('删除成功')
+    }).catch(() => {
+      ElMessage.error('删除失败')
+    })
   })
 }
 
-const editRole = (row)=> {
-  form.value = {...row}
+const editRole = (row) => {
+  form.value = { ...row }
   dialogTitle.value = '编辑角色'
   showDialog.value = true
 }

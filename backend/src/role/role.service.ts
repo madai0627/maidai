@@ -7,7 +7,6 @@ import { Repository, DataSource } from 'typeorm';
 
 @Injectable()
 export class RoleService {
-
   constructor(
     @InjectRepository(Role)
     private usersRepository: Repository<Role>,
@@ -15,12 +14,12 @@ export class RoleService {
   ) {}
 
   async create(createRoleDto: CreateRoleDto) {
-    createRoleDto.created_at = new Date()
+    createRoleDto.created_at = new Date();
     await this.usersRepository.save(createRoleDto);
     return {
       code: 0,
-      msg: '添加成功'
-    }
+      msg: '添加成功',
+    };
   }
 
   async findAll() {
@@ -28,24 +27,23 @@ export class RoleService {
     return {
       code: 0,
       data: roleList,
-      msg: 'success'
-    }
+      msg: 'success',
+    };
   }
-
 
   async update(id: number, updateRoleDto: UpdateRoleDto) {
     await this.usersRepository.update(id, updateRoleDto);
     return {
       code: 0,
-      msg: '编辑成功'
-    }
+      msg: '编辑成功',
+    };
   }
 
   async remove(id: number) {
     await this.usersRepository.delete(id);
     return {
       code: 0,
-      msg: '删除成功'
-    }
+      msg: '删除成功',
+    };
   }
 }

@@ -15,25 +15,21 @@ export class CatInfoService {
 
   create(createCatInfoDto: CreateCatInfoDto) {
     return this.catInfoRepository.save(createCatInfoDto);
-
   }
 
   findAll() {
     return this.catInfoRepository.query('SELECT * FROM madai.cat_info');
-
   }
 
   findOne(id: number) {
-    return this.catInfoRepository.findBy({ id })
+    return this.catInfoRepository.findBy({ id });
   }
 
   update(id: number, updateCatInfoDto: UpdateCatInfoDto) {
     return this.catInfoRepository.update(id, updateCatInfoDto);
-
   }
 
   remove(id: number) {
     return this.catInfoRepository.delete(id);
-
   }
 }

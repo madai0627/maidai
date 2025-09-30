@@ -7,27 +7,27 @@ import { UpdateCatTypeDto } from './dto/update-cat_type.dto';
 export class CatTypeController {
   constructor(private readonly catTypeService: CatTypeService) {}
 
-  @Post()
+  @Post('add-cat-type')
   create(@Body() createCatTypeDto: CreateCatTypeDto) {
     return this.catTypeService.create(createCatTypeDto);
   }
 
-  @Get()
+  @Get('get-cat-type')
   findAll() {
     return this.catTypeService.findAll();
   }
 
-  @Get(':id')
+  @Get('search-cat-type')
   findOne(@Param('id') id: string) {
     return this.catTypeService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCatTypeDto: UpdateCatTypeDto) {
-    return this.catTypeService.update(+id, updateCatTypeDto);
+  @Patch('edit-cat-type')
+  update(@Body() { id, ...updateData }: { id: number; [key: string]: any }) {
+    return this.catTypeService.update(id, updateData);
   }
 
-  @Delete(':id')
+  @Delete('delete-cat-type')
   remove(@Param('id') id: string) {
     return this.catTypeService.remove(+id);
   }

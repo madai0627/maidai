@@ -1,4 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity('role')
 export class Role {
@@ -11,7 +16,7 @@ export class Role {
   @Column()
   permissions: string;
 
-  @Column()
+  @CreateDateColumn()
   created_at: Date;
 
   @Column()

@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete,Query  } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { CatInfoService } from './cat_info.service';
 import { CreateCatInfoDto } from './dto/create-cat_info.dto';
 import { UpdateCatInfoDto } from './dto/update-cat_info.dto';
@@ -19,7 +28,6 @@ export class CatInfoController {
 
   @Get('search-cat')
   findOne(@Query('id') id: number) {
-    
     return this.catInfoService.findOne(+id);
   }
 

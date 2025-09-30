@@ -1,4 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity('cat_type')
 export class CatType {
@@ -26,6 +31,6 @@ export class CatType {
   @Column()
   origin: string;
 
-  @Column()
+  @CreateDateColumn()
   created_at: Date;
 }
