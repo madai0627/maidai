@@ -13,8 +13,8 @@ export class CatType {
   @Column()
   type_name: string;
 
-  @Column()
-  img_url: string;
+  @Column('longtext')
+  img_data: string;
 
   @Column()
   desc: string;

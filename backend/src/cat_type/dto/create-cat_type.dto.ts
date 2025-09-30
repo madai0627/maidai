@@ -1,6 +1,6 @@
 export class CreateCatTypeDto {
   type_name: string;
-  img_url?: string;
+  img_data?: string;
   desc: string;
   body_size: string;
   color: string;

@@ -3,9 +3,15 @@
   <el-table :data="catList" border style="width: 100%" max-height="800">
     <el-table-column prop="id" label="id" width="100" align="center" />
     <el-table-column prop="name" label="猫咪名称" width="150" align="center" />
-    <el-table-column prop="img_url" label="图片" width="120" align="center">
+    <el-table-column prop="img_data" label="图片" width="120" align="center">
       <template #default="scope">
-        <img :src="scope.row.img_url" style="width: 50px; height: 50px;" />
+        <img 
+          v-if="scope.row.img_data" 
+          :src="getImageUrl(scope.row.img_data)" 
+          style="width: 50px; height: 50px; cursor: pointer; object-fit: cover;" 
+          @click="showImagePreview(scope.row.img_data)"
+        />
+        <span v-else>无图片</span>
       </template>
     </el-table-column>
     <el-table-column prop="type" label="分类" width="120" align="center" />
@@ -54,8 +60,18 @@
       <el-form-item label="猫咪名称">
         <el-input v-model="editForm.name"  style="width: 300px;" />
       </el-form-item>
-      <el-form-item label="图片链接">
-        <el-input v-model="editForm.img_url"  style="width: 300px;" />
+      <el-form-item label="图片">
+        <el-upload
+          class="image-uploader"
+          :show-file-list="false"
+          :before-upload="beforeImageUpload"
+          :on-success="(response, file) => handleImageSuccess(response, file, 'edit')"
+          :on-error="handleImageError"
+          action="/api/cat-info/upload-image"
+        >
+          <img v-if="editForm.img_data" :src="getImageUrl(editForm.img_data)" class="image-preview" />
+          <el-icon v-else class="image-uploader-icon"><Plus /></el-icon>
+        </el-upload>
       </el-form-item>
       <el-form-item label="分类">
         <el-select v-model="editForm.type_id" placeholder="请选择分类" style="width: 300px;">
@@ -96,8 +112,18 @@
       <el-form-item label="猫咪名称">
         <el-input v-model="addForm.name"  style="width: 300px;" />
       </el-form-item>
-      <el-form-item label="图片链接">
-        <el-input v-model="addForm.img_url"  style="width: 300px;" />
+      <el-form-item label="图片">
+        <el-upload
+          class="image-uploader"
+          :show-file-list="false"
+          :before-upload="beforeImageUpload"
+          :on-success="(response, file) => handleImageSuccess(response, file, 'add')"
+          :on-error="handleImageError"
+          action="/api/cat-info/upload-image"
+        >
+          <img v-if="addForm.img_data" :src="getImageUrl(addForm.img_data)" class="image-preview" />
+          <el-icon v-else class="image-uploader-icon"><Plus /></el-icon>
+        </el-upload>
       </el-form-item>
       <el-form-item label="分类">
         <el-select v-model="addForm.type_id" placeholder="请选择分类" style="width: 300px;">
@@ -131,12 +157,20 @@
       </span>
     </template>
   </el-dialog>
+
+  <!-- 图片预览对话框 -->
+  <el-dialog v-model="showImageDialog" title="图片预览" width="auto" align-center>
+    <div class="image-preview-container">
+      <img :src="previewImageUrl" class="preview-image" />
+    </div>
+  </el-dialog>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue';
-import { getCatListSync, removeCatSync, addCatSync, editCatSync, getCatTypeSync } from '@/api/index';
+import { getCatListSync, removeCatSync, addCatSync, editCatSync, getCatTypeSync, uploadCatImageSync } from '@/api/index';
 import { ElMessageBox, ElMessage } from 'element-plus';
+import { Plus } from '@element-plus/icons-vue';
 
 const catList = ref([]);
 const currentCat = ref('')
@@ -149,7 +183,7 @@ const showEditDialog = ref(false)
 const editForm = ref({
   id: null,
   name: '',
-  img_url: '',
+  img_data: null,
   type_id: null,
   color: '',
   weight: 0,
@@ -161,13 +195,17 @@ const editForm = ref({
 const showAddDialog = ref(false)
 const addForm = ref({
   name: '',
-  img_url: '',
+  img_data: null,
   type_id: null,
   color: '',
   weight: 0,
   bithday: null,
   desc: ''
 })
+
+// 图片预览相关
+const showImageDialog = ref(false)
+const previewImageUrl = ref('')
 
 onMounted(() => {
   getCatList();
@@ -224,6 +262,61 @@ const getTypeList = () => {
       typeList.value = res.data;
     }
   });
+};
+
+// 图片处理相关方法
+const getImageUrl = (imgData) => {
+  if (!imgData) return '';
+  if (typeof imgData === 'string') {
+    // 如果已经是完整的data URL，直接返回
+    if (imgData.startsWith('data:')) {
+      return imgData;
+    }
+    // 如果是base64字符串，添加data URL前缀
+    return `data:image/jpeg;base64,${imgData}`;
+  }
+  return '';
+};
+
+const beforeImageUpload = (file) => {
+  const isImage = file.type.startsWith('image/');
+  const isLt5M = file.size / 1024 / 1024 < 5;
+
+  if (!isImage) {
+    ElMessage.error('只能上传图片文件!');
+    return false;
+  }
+  if (!isLt5M) {
+    ElMessage.error('图片大小不能超过 5MB!');
+    return false;
+  }
+  return true;
+};
+
+const handleImageSuccess = (response, file, type) => {
+  if (response.code === 0) {
+    // 直接使用后端返回的base64字符串
+    if (type === 'add') {
+      addForm.value.img_data = response.data.base64;
+    } else if (type === 'edit') {
+      editForm.value.img_data = response.data.base64;
+    }
+    ElMessage.success('图片上传成功');
+  } else {
+    ElMessage.error('图片上传失败：' + response.msg);
+  }
+};
+
+const handleImageError = (error) => {
+  ElMessage.error('图片上传失败');
+  console.error('Upload error:', error);
+};
+
+// 显示图片预览
+const showImagePreview = (imgData) => {
+  if (!imgData) return;
+  previewImageUrl.value = getImageUrl(imgData);
+  showImageDialog.value = true;
 };
 
 const getCatList = () => {
@@ -311,7 +404,7 @@ const editCat = (cat) => {
   editForm.value = {
     id: cat.id,
     name: cat.name,
-    img_url: cat.img_url,
+    img_data: cat.img_data,
     type_id: typeId,
     color: cat.color,
     weight: cat.weight,
@@ -327,7 +420,7 @@ const handleEditClose = () => {
   editForm.value = {
     id: null,
     name: '',
-    img_url: '',
+    img_data: null,
     type_id: null,
     color: '',
     weight: 0,
@@ -365,7 +458,7 @@ const confirmEdit = () => {
 const addCat = () => {
   addForm.value = {
     name: '',
-    img_url: '',
+    img_data: null,
     type_id: null,
     color: '',
     weight: 0,
@@ -434,6 +527,46 @@ const confirmAdd = () => {
   .type-item.checked {
     background-color: #2bbb61;
     color: #fff;
+  }
+}
+
+.image-uploader {
+  .image-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 100px;
+    height: 100px;
+    line-height: 100px;
+    text-align: center;
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .image-preview {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #d9d9d9;
+  }
+}
+
+.image-preview-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 80vw;
+  max-height: 80vh;
+  
+  .preview-image {
+    height: 720px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 }
 </style>

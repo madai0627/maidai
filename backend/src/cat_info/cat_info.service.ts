@@ -124,4 +124,53 @@ export class CatInfoService {
       };
     }
   }
+
+  async uploadImage(file: Express.Multer.File) {
+    try {
+      if (!file) {
+        return {
+          code: 400,
+          msg: '没有上传文件',
+          data: null,
+        };
+      }
+
+      // 验证文件类型
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.mimetype)) {
+        return {
+          code: 400,
+          msg: '不支持的文件类型，请上传图片文件',
+          data: null,
+        };
+      }
+
+      // 验证文件大小 (5MB限制)
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        return {
+          code: 400,
+          msg: '文件大小不能超过5MB',
+          data: null,
+        };
+      }
+
+      return {
+        code: 0,
+        msg: '上传成功',
+        data: {
+          base64: file.buffer.toString('base64'),
+          originalname: file.originalname,
+          mimetype: file.mimetype,
+          size: file.size,
+        },
+      };
+    } catch (error) {
+      return {
+        code: 500,
+        msg: '上传失败：' + error.message,
+        data: null,
+      };
+    }
+  }
 }

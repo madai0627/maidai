@@ -74,3 +74,20 @@ export const editCatTypeSync = (data) => {
 export const deleteCatTypeSync = (id) => {
   return http.delete(`/api/cat-type/delete-cat-type?id=${id}`)
 }
+
+// 图片上传API
+export const uploadCatImageSync = (formData) => {
+  return http.post('/api/cat-info/upload-image', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}
+
+export const uploadCatTypeImageSync = (formData) => {
+  return http.post('/api/cat-type/upload-image', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}

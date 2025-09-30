@@ -6,7 +6,10 @@ import {
   Patch,
   Delete,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CatInfoService } from './cat_info.service';
 import { CreateCatInfoDto } from './dto/create-cat_info.dto';
 import { UpdateCatInfoDto } from './dto/update-cat_info.dto';
@@ -41,5 +44,15 @@ export class CatInfoController {
   @Delete('remove-cat')
   async remove(@Query('id') id: number) {
     return await this.catInfoService.remove(+id);
+  }
+
+  @Post('upload-image')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
+  async uploadImage(@UploadedFile() file: Express.Multer.File) {
+    return await this.catInfoService.uploadImage(file);
   }
 }

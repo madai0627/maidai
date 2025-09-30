@@ -6,7 +6,10 @@ import {
   Patch,
   Param,
   Delete,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CatTypeService } from './cat_type.service';
 import { CreateCatTypeDto } from './dto/create-cat_type.dto';
 
@@ -37,5 +40,15 @@ export class CatTypeController {
   @Delete('delete-cat-type')
   remove(@Param('id') id: string) {
     return this.catTypeService.remove(+id);
+  }
+
+  @Post('upload-image')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
+  async uploadImage(@UploadedFile() file: Express.Multer.File) {
+    return await this.catTypeService.uploadImage(file);
   }
 }

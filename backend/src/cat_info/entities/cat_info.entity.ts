@@ -8,8 +8,8 @@ export class CatInfo {
   @Column()
   name: string;
 
-  @Column()
-  img_url: string;
+  @Column('longtext')
+  img_data: string;
 
   @Column()
   age: string;
