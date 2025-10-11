@@ -107,3 +107,15 @@ export const getFinanceRecordList = (params) => http.get('/api/finance-record/li
 export const editFinanceRecord = (id, data) => http.patch(`/api/finance-record/edit?id=${id}`, data)
 export const deleteFinanceRecord = (id) => http.delete(`/api/finance-record/delete?id=${id}`)
 export const addFinanceRecord = (data) => http.post('/api/finance-record/add', data)
+export const getFinanceRecordMonthlyStats = () => {
+  return http.get('/api/finance-record/monthly-stats', { params: { _ts: Date.now() } })
+}
+export const getFinanceStatsByPurpose = (params) => http.get('/api/finance-record/stats-by-purpose', { params })
+export const getFinanceStatsByDay = (params) => http.get('/api/finance-record/stats-by-day', { params })
+
+// 照片墙 API
+export const getPhotoWallList = (params) => http.get('/api/photo-wall/list', { params })
+export const addPhotoWall = (data) => http.post('/api/photo-wall/add', data)
+export const editPhotoWall = (id, data) => http.patch(`/api/photo-wall/edit?id=${id}`, data)
+export const deletePhotoWall = (id) => http.delete(`/api/photo-wall/delete?id=${id}`)
+export const uploadPhotoTemp = (formData) => http.post('/api/photo-wall/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } })

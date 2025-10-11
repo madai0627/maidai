@@ -80,6 +80,70 @@ export class FinanceRecordService {
     await this.repo.save(entity)
     return { code: 0, msg: '添加成功', data: entity }
   }
+
+  async getMonthlyStats() {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    // 获取当月支出总额（按分类=支出统计，金额取绝对值汇总）
+    const expenseResult = await this.repo
+      .createQueryBuilder('record')
+      .select('SUM(CAST(record.amount AS DECIMAL(12,2)))', 'total')
+      .where('record.created_at BETWEEN :start AND :end', { start: startOfMonth, end: endOfMonth })
+      .andWhere('record.category = :category', { category: '支出' })
+      .getRawOne();
+
+    const totalExpense = Math.abs(Number(expenseResult?.total || 0));
+
+    return {
+      code: 0,
+      msg: 'success',
+      data: {
+        totalExpense: totalExpense.toFixed(2),
+        month: now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0')
+      }
+    };
+  }
+
+  async statsByPurpose(start?: string, end?: string) {
+    const startDate = start ? new Date(start) : new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+    const endDate = end ? new Date(end + ' 23:59:59') : new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59, 999)
+
+    const qb = this.repo
+      .createQueryBuilder('r')
+      .select('r.purpose', 'purpose')
+      .addSelect('SUM(CAST(r.amount AS DECIMAL(12,2)))', 'value')
+      .where('r.created_at BETWEEN :start AND :end', { start: startDate, end: endDate })
+      .andWhere('r.category = :category', { category: '支出' })
+      .groupBy('r.purpose')
+      .orderBy('value', 'DESC')
+
+    const rows = await qb.getRawMany<{ purpose: string; value: string }>()
+    const data = rows.map(r => ({ name: r.purpose || '未分类', value: Number(r.value || 0) }))
+    return { code: 0, msg: 'success', data }
+  }
+
+  async statsByDay(start?: string, end?: string) {
+    const startDate = start ? new Date(start) : new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+    const endDate = end ? new Date(end + ' 23:59:59') : new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59, 999)
+
+    // 按天汇总收入/支出
+    const rows = await this.repo
+      .createQueryBuilder('r')
+      .select("DATE_FORMAT(r.created_at, '%Y-%m-%d')", 'day')
+      .addSelect("SUM(CASE WHEN r.category = '收入' THEN CAST(r.amount AS DECIMAL(12,2)) ELSE 0 END)", 'income')
+      .addSelect("SUM(CASE WHEN r.category = '支出' THEN CAST(r.amount AS DECIMAL(12,2)) ELSE 0 END)", 'expense')
+      .where('r.created_at BETWEEN :start AND :end', { start: startDate, end: endDate })
+      .groupBy('day')
+      .orderBy('day', 'ASC')
+      .getRawMany<{ day: string; income: string; expense: string }>()
+
+    const days = rows.map(r => r.day)
+    const income = rows.map(r => Number(r.income || 0))
+    const expense = rows.map(r => Number(r.expense || 0))
+    return { code: 0, msg: 'success', data: { days, income, expense } }
+  }
 }
 
 

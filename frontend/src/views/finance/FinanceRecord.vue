@@ -103,8 +103,8 @@ const filters = ref({
   category: '',
   minAmount: undefined,
   maxAmount: undefined,
-  sortBy: 'amount',
-  order: 'DESC'
+  sortBy: '',
+  order: ''
 })
 const dateRange = ref([])
 const purposeOptions = ref([])
@@ -123,11 +123,14 @@ const loadPurposeOptions = async () => {
 }
 
 const onSearch = () => {
+  if(filters.value.order) {
+    filters.value.sortBy = 'amount'
+  }
   filters.value.page = 1
   getList()
 }
 const onReset = () => {
-  filters.value = { page: 1, pageSize: 10, purpose: '', category: '', minAmount: undefined, maxAmount: undefined, sortBy: 'amount', order: 'DESC' }
+  filters.value = { page: 1, pageSize: 10, purpose: '', category: '', minAmount: undefined, maxAmount: undefined, sortBy: '', order: '' }
   dateRange.value = []
   getList()
 }

@@ -504,13 +504,6 @@ const confirmAdd = () => {
   margin-bottom: 20px;
 }
 
-.desc {
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .type-container {
   display: flex;
   flex-wrap: wrap;

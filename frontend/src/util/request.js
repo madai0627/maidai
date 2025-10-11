@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const service = axios.create({
-  baseUrl: "/",
-  timeOut: 60000,
+  baseURL: "/",
+  timeout: 60000,
 });
 
 service.interceptors.response.use(

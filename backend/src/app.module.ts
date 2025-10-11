@@ -9,6 +9,7 @@ import { CatTypeModule } from './cat_type/cat_type.module';
 import { FinancePurposeModule } from './finance_purpose/finance_purpose.module';
 import { FinanceBudgetModule } from './finance_budget/finance_budget.module';
 import { FinanceRecordModule } from './finance_record/finance_record.module';
+import { PhotoWallModule } from './photo_wall/photo_wall.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { FinanceRecordModule } from './finance_record/finance_record.module';
     FinancePurposeModule,
     FinanceBudgetModule,
     FinanceRecordModule,
+    PhotoWallModule,
   ],
   controllers: [AppController],
   providers: [AppService],
