@@ -119,3 +119,15 @@ export const addPhotoWall = (data) => http.post('/api/photo-wall/add', data)
 export const editPhotoWall = (id, data) => http.patch(`/api/photo-wall/edit?id=${id}`, data)
 export const deletePhotoWall = (id) => http.delete(`/api/photo-wall/delete?id=${id}`)
 export const uploadPhotoTemp = (formData) => http.post('/api/photo-wall/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+
+// 题库（做题）API - 第一阶段
+export const getQuizCategories = () => http.get('/api/quiz/categories')
+export const addQuizCategory = (data) => http.post('/api/quiz/categories', data)
+export const editQuizCategory = (id, data) => http.put(`/api/quiz/categories/${id}`, data)
+export const deleteQuizCategory = (id) => http.delete(`/api/quiz/categories/${id}`)
+
+export const getQuizQuestionsByCategory = (categoryId) =>
+  http.get('/api/quiz/questions', { params: { categoryId } })
+export const addQuizQuestion = (data) => http.post('/api/quiz/questions', data)
+export const editQuizQuestion = (id, data) => http.put(`/api/quiz/questions/${id}`, data)
+export const deleteQuizQuestion = (id) => http.delete(`/api/quiz/questions/${id}`)

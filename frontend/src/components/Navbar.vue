@@ -15,9 +15,10 @@
       <div class="tab-item" :class="{active: route.name === 'Index'}" @click="router.push('/')">首页</div>
       <div class="tab-item" :class="{active: route.name === 'IndexCat'}" @click="router.push('/index-cat')">宠物</div>
       <div class="tab-item" :class="{active: route.name === 'IndexFinance'}" @click="router.push('/index-finance')">财务</div>
+      <div class="tab-item" :class="{active: route.name === 'IndexQuiz' || route.name === 'IndexQuizDo'}" @click="router.push('/index-quiz')">做题</div>
     </div>
     <div class="right">
-      <div class="setting" @click="router.push('/cat')">
+      <div class="setting" @click="router.push('/quiz-admin')">
         <el-icon>
           <Setting />
         </el-icon>

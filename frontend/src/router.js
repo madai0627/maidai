@@ -9,6 +9,32 @@ const routes = [
     name: 'Index'
   },
   {
+    path: '/index-quiz',
+    component: () => import('@/views/index-quiz/Index.vue'),
+    hidden: true,
+    name: 'IndexQuiz'
+  },
+  {
+    path: '/quiz-admin',
+    component: Layout,
+    redirect: '/quiz-admin/categories',
+    meta: { title: '题库管理', icon: 'Collection' },
+    children: [
+      {
+        path: 'categories',
+        component: () => import('@/views/quiz/AdminCategory.vue'),
+        name: 'QuizAdminCategory',
+        meta: { title: '分类管理', icon: 'Folder' }
+      },
+      {
+        path: 'questions',
+        component: () => import('@/views/quiz/AdminQuestion.vue'),
+        name: 'QuizAdminQuestion',
+        meta: { title: '题目管理', icon: 'Document' }
+      }
+    ]
+  },
+  {
     path: '/index-cat',
     component: () => import('@/views/index-cat/Index.vue'),
     hidden: true,
