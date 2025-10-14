@@ -12,6 +12,7 @@ import { FinanceRecordModule } from './finance_record/finance_record.module';
 import { PhotoWallModule } from './photo_wall/photo_wall.module';
 import { QuizCategoryModule } from './quiz_category/quiz_category.module';
 import { QuizQuestionModule } from './quiz_question/quiz_question.module';
+import { QuizRecordModule } from './quiz_record/quiz_record.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { QuizQuestionModule } from './quiz_question/quiz_question.module';
     PhotoWallModule,
     QuizCategoryModule,
     QuizQuestionModule,
+    QuizRecordModule,
   ],
   controllers: [AppController],
   providers: [AppService],

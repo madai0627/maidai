@@ -36,13 +36,38 @@
         </div>
       </div>
     </el-card>
+
+    <!-- 完成结果 -->
+    <el-card v-if="completed" class="result-card" shadow="hover">
+      <div class="result-content">
+        <h3>答题完成！</h3>
+        <div class="score-info">
+          <div class="score-item">
+            <span class="label">总题数：</span>
+            <span class="value">{{ questions.length }}</span>
+          </div>
+          <div class="score-item">
+            <span class="label">总得分：</span>
+            <span class="value score">{{ totalScore }}</span>
+          </div>
+          <div class="score-item">
+            <span class="label">正确率：</span>
+            <span class="value">{{ ((totalScore / 10) / questions.length * 100).toFixed(1) }}%</span>
+          </div>
+        </div>
+        <div class="result-actions">
+          <el-button type="primary" @click="resetQuiz">重新开始</el-button>
+          <el-button @click="$router.push('/index-quiz-wrong')">查看错题</el-button>
+        </div>
+      </div>
+    </el-card>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import Navbar from '../../components/Navbar.vue'
-import { getQuizCategories, getQuizQuestionsByCategory } from '@/api'
+import { getQuizCategories, getQuizQuestionsByCategory, submitQuizAnswer } from '@/api'
 
 const categories = ref([])
 const selectedCategoryId = ref(null)
@@ -53,6 +78,9 @@ const index = ref(0)
 const selected = ref('')
 const answered = ref(false)
 const isCorrect = ref(false)
+const totalScore = ref(0)
+const completed = ref(false)
+const userId = ref(1) // 简化版，实际应从登录状态获取
 
 const currentQuestion = computed(() => questions.value[index.value] || {})
 const isLast = computed(() => index.value >= questions.value.length - 1)
@@ -85,16 +113,34 @@ const resetQuiz = () => {
   selected.value = ''
   answered.value = false
   isCorrect.value = false
+  totalScore.value = 0
+  completed.value = false
 }
 
-const submit = () => {
+const submit = async () => {
   answered.value = true
   isCorrect.value = selected.value === currentQuestion.value.correctAnswer
+  
+  // 提交答题记录
+  try {
+    await submitQuizAnswer({
+      userId: userId.value,
+      questionId: currentQuestion.value.id,
+      userAnswer: selected.value,
+      score: 10
+    })
+    
+    if (isCorrect.value) {
+      totalScore.value += 10
+    }
+  } catch (error) {
+    console.error('提交答题记录失败:', error)
+  }
 }
 
 const next = () => {
   if (isLast.value) {
-    resetQuiz()
+    completed.value = true
     return
   }
   index.value += 1
@@ -116,6 +162,15 @@ onMounted(loadCategories)
 .stem { font-weight: 600; font-size: 16px; margin-top: 4px; }
 .options { display: grid; gap: 8px; margin-top: 6px; }
 .actions { margin-top: 8px; }
+.result-card { margin-top: 16px; }
+.result-content { text-align: center; padding: 20px; }
+.result-content h3 { margin-bottom: 20px; color: #409eff; }
+.score-info { display: flex; justify-content: center; gap: 40px; margin-bottom: 20px; }
+.score-item { display: flex; flex-direction: column; gap: 4px; }
+.score-item .label { font-size: 14px; color: #666; }
+.score-item .value { font-size: 18px; font-weight: 600; }
+.score-item .value.score { color: #67c23a; }
+.result-actions { display: flex; justify-content: center; gap: 12px; }
 </style>
 
 

@@ -131,3 +131,9 @@ export const getQuizQuestionsByCategory = (categoryId) =>
 export const addQuizQuestion = (data) => http.post('/api/quiz/questions', data)
 export const editQuizQuestion = (id, data) => http.put(`/api/quiz/questions/${id}`, data)
 export const deleteQuizQuestion = (id) => http.delete(`/api/quiz/questions/${id}`)
+
+// 答题记录 API
+export const submitQuizAnswer = (data) => http.post('/api/quiz/records/submit', data)
+export const getWrongQuestions = (userId) => http.get('/api/quiz/records/wrong', { params: { userId } })
+export const getUserQuizStats = (userId) => http.get('/api/quiz/records/stats', { params: { userId } })
+export const getRecentQuizRecords = (userId, limit) => http.get('/api/quiz/records/recent', { params: { userId, limit } })
