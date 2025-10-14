@@ -21,6 +21,7 @@ export class QuizQuestionController {
       optionD: string;
       correctAnswer: 'A' | 'B' | 'C' | 'D';
       categoryId: number;
+      difficulty?: number;
     },
   ) {
     return this.service.create(body);
@@ -29,9 +30,18 @@ export class QuizQuestionController {
   @Put(':id')
   update(
     @Param('id') id: string,
-    @Body() body: Partial<{ content: string; optionA: string; optionB: string; optionC: string; optionD: string; correctAnswer: 'A' | 'B' | 'C' | 'D'; categoryId: number }>,
+    @Body() body: Partial<{ 
+      content: string; 
+      optionA: string; 
+      optionB: string; 
+      optionC: string; 
+      optionD: string; 
+      correctAnswer: 'A' | 'B' | 'C' | 'D'; 
+      categoryId: number;
+      difficulty?: number;
+    }>,
   ) {
-    return this.service.update(Number(id), body as any);
+    return this.service.update(Number(id), body);
   }
 
   @Delete(':id')

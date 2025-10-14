@@ -137,3 +137,14 @@ export const submitQuizAnswer = (data) => http.post('/api/quiz/records/submit', 
 export const getWrongQuestions = (userId) => http.get('/api/quiz/records/wrong', { params: { userId } })
 export const getUserQuizStats = (userId) => http.get('/api/quiz/records/stats', { params: { userId } })
 export const getRecentQuizRecords = (userId, limit) => http.get('/api/quiz/records/recent', { params: { userId, limit } })
+
+// 图表数据 API
+export const getQuizCategoryStats = (userId) => http.get('/api/quiz/records/category-stats', { params: { userId } })
+export const getQuizDifficultyStats = (userId) => http.get('/api/quiz/records/difficulty-stats', { params: { userId } })
+export const getQuizWeeklyTrend = (userId) => http.get('/api/quiz/records/weekly-trend', { params: { userId } })
+
+// 收藏功能 API
+export const addQuizFavorite = (data) => http.post('/api/quiz/favorites/add', data)
+export const removeQuizFavorite = (userId, questionId) => http.delete('/api/quiz/favorites/remove', { params: { userId, questionId } })
+export const getQuizFavorites = (userId) => http.get('/api/quiz/favorites/list', { params: { userId } })
+export const checkQuizFavorite = (userId, questionId) => http.get('/api/quiz/favorites/check', { params: { userId, questionId } })

@@ -21,6 +21,12 @@ const routes = [
     name: 'IndexQuizWrong'
   },
   {
+    path: '/index-quiz-favorites',
+    component: () => import('@/views/index-quiz-favorites/Index.vue'),
+    hidden: true,
+    name: 'IndexQuizFavorites'
+  },
+  {
     path: '/quiz-admin',
     component: Layout,
     redirect: '/quiz-admin/categories',

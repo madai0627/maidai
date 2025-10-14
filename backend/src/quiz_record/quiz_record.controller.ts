@@ -29,4 +29,19 @@ export class QuizRecordController {
   getRecentRecords(@Query('userId') userId: string, @Query('limit') limit?: string) {
     return this.service.getRecentRecords(Number(userId), limit ? Number(limit) : 10);
   }
+
+  @Get('category-stats')
+  getCategoryStats(@Query('userId') userId: string) {
+    return this.service.getCategoryStats(Number(userId));
+  }
+
+  @Get('difficulty-stats')
+  getDifficultyStats(@Query('userId') userId: string) {
+    return this.service.getDifficultyStats(Number(userId));
+  }
+
+  @Get('weekly-trend')
+  getWeeklyTrend(@Query('userId') userId: string) {
+    return this.service.getWeeklyTrend(Number(userId));
+  }
 }

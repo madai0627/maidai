@@ -24,6 +24,9 @@ export class QuizQuestion {
   @Column({ length: 1 })
   correctAnswer: string; // A/B/C/D
 
+  @Column({ comment: '题目难度：1-简单 2-中等 3-困难', default: 1 })
+  difficulty: number;
+
   @ManyToOne(() => QuizCategory, { eager: true, onDelete: 'CASCADE' })
   category: QuizCategory;
 }

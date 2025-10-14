@@ -19,6 +19,13 @@
       <el-table-column prop="optionC" label="C" min-width="140" />
       <el-table-column prop="optionD" label="D" min-width="140" />
       <el-table-column prop="correctAnswer" label="正确" width="80" align="center" />
+      <el-table-column prop="difficulty" label="难度" width="80" align="center">
+        <template #default="scope">
+          <el-tag :type="getDifficultyType(scope.row.difficulty)" size="small">
+            {{ getDifficultyText(scope.row.difficulty) }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="180" align="center">
         <template #default="scope">
           <el-button link type="primary" size="small" @click="editRow(scope.row)">编辑</el-button>
@@ -57,6 +64,13 @@
             <el-option value="D" label="D" />
           </el-select>
         </el-form-item>
+        <el-form-item label="难度">
+          <el-select v-model.number="form.difficulty" style="width: 120px">
+            <el-option :value="1" label="简单" />
+            <el-option :value="2" label="中等" />
+            <el-option :value="3" label="困难" />
+          </el-select>
+        </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
@@ -86,7 +100,8 @@ const form = ref({
   optionB: '',
   optionC: '',
   optionD: '',
-  correctAnswer: ''
+  correctAnswer: '',
+  difficulty: 1
 })
 
 const loadCategories = async () => {
@@ -113,7 +128,7 @@ const onSearch = () => { load() }
 const onReset = () => { filterCategoryId.value = 0; load() }
 
 const reset = () => {
-  form.value = { id: null, categoryId: '', content: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: '' }
+  form.value = { id: null, categoryId: '', content: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: '', difficulty: 1 }
 }
 
 const addQuestion = () => {
@@ -131,7 +146,8 @@ const editRow = (row) => {
     optionB: row.optionB,
     optionC: row.optionC,
     optionD: row.optionD,
-    correctAnswer: row.correctAnswer
+    correctAnswer: row.correctAnswer,
+    difficulty: row.difficulty || 1
   }
   dialogTitle.value = '编辑题目'
   showDialog.value = true
@@ -142,27 +158,48 @@ const handleClose = () => { showDialog.value = false }
 const confirmEdit = async () => {
   if (!form.value.categoryId || !form.value.content) { ElMessage.error('请填写完整'); return }
   const payload = { ...form.value }
-  if (payload.id) {
-    const { id, ...rest } = payload
-    const res = await editQuizQuestion(id, rest)
-    if (res.code && res.code !== 0) { ElMessage.error(res.msg || '更新失败'); return }
-    ElMessage.success('更新成功')
-  } else {
-    const res = await addQuizQuestion(payload)
-    if (res.code && res.code !== 0) { ElMessage.error(res.msg || '新增失败'); return }
-    ElMessage.success('新增成功')
+  
+  try {
+    if (payload.id) {
+      const { id, ...rest } = payload
+      const res = await editQuizQuestion(id, rest)
+      console.log('编辑响应:', res)
+      ElMessage.success('更新成功')
+    } else {
+      const res = await addQuizQuestion(payload)
+      console.log('新增响应:', res)
+      ElMessage.success('新增成功')
+    }
+    showDialog.value = false
+    await load()
+  } catch (error) {
+    console.error('操作失败:', error)
+    ElMessage.error(error.response?.data?.message || error.message || '操作失败')
   }
-  showDialog.value = false
-  await load()
 }
 
 const remove = async (row) => {
   ElMessageBox.confirm('确定删除该题目吗？', '提示', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }).then(async () => {
-    const res = await deleteQuizQuestion(row.id)
-    if (res.code && res.code !== 0) { ElMessage.error(res.msg || '删除失败'); return }
-    ElMessage.success('删除成功')
-    await load()
+    try {
+      const res = await deleteQuizQuestion(row.id)
+      console.log('删除响应:', res)
+      ElMessage.success('删除成功')
+      await load()
+    } catch (error) {
+      console.error('删除失败:', error)
+      ElMessage.error(error.response?.data?.message || error.message || '删除失败')
+    }
   })
+}
+
+const getDifficultyType = (difficulty) => {
+  const types = { 1: 'success', 2: 'warning', 3: 'danger' }
+  return types[difficulty] || 'info'
+}
+
+const getDifficultyText = (difficulty) => {
+  const texts = { 1: '简单', 2: '中等', 3: '困难' }
+  return texts[difficulty] || '未知'
 }
 
 onMounted(async () => {

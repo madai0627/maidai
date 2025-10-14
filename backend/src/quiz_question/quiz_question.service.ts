@@ -25,6 +25,7 @@ export class QuizQuestionService {
     optionD: string;
     correctAnswer: 'A' | 'B' | 'C' | 'D';
     categoryId: number;
+    difficulty?: number;
   }) {
     return this.categoryRepo.findOneBy({ id: data.categoryId }).then((cat) => {
       const entity = this.questionRepo.create({
@@ -34,6 +35,7 @@ export class QuizQuestionService {
         optionC: data.optionC,
         optionD: data.optionD,
         correctAnswer: data.correctAnswer,
+        difficulty: data.difficulty || 1,
         category: cat!,
       });
       return this.questionRepo.save(entity);
@@ -41,12 +43,22 @@ export class QuizQuestionService {
   }
 
   update(id: number, data: Partial<QuizQuestion> & { categoryId?: number }) {
+    const updateData: any = { ...data };
+    
     if (data.categoryId) {
-      return this.categoryRepo.findOneBy({ id: data.categoryId }).then((cat) =>
-        this.questionRepo.update(id, { ...data, category: cat! }),
-      );
+      return this.categoryRepo.findOneBy({ id: data.categoryId }).then((cat) => {
+        updateData.category = cat!;
+        delete updateData.categoryId;
+        return this.questionRepo.update(id, updateData);
+      });
     }
-    return this.questionRepo.update(id, data);
+    
+    // 确保 difficulty 字段被正确处理
+    if (updateData.difficulty !== undefined) {
+      updateData.difficulty = Number(updateData.difficulty);
+    }
+    
+    return this.questionRepo.update(id, updateData);
   }
 
   remove(id: number) {

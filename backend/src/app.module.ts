@@ -13,6 +13,7 @@ import { PhotoWallModule } from './photo_wall/photo_wall.module';
 import { QuizCategoryModule } from './quiz_category/quiz_category.module';
 import { QuizQuestionModule } from './quiz_question/quiz_question.module';
 import { QuizRecordModule } from './quiz_record/quiz_record.module';
+import { QuizFavoriteModule } from './quiz_favorite/quiz_favorite.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { QuizRecordModule } from './quiz_record/quiz_record.module';
     QuizCategoryModule,
     QuizQuestionModule,
     QuizRecordModule,
+    QuizFavoriteModule,
   ],
   controllers: [AppController],
   providers: [AppService],
