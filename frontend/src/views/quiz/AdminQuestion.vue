@@ -4,15 +4,31 @@
       <el-button type="success" @click="addQuestion">新增题目</el-button>
       <el-button type="primary" @click="showUploadDialog = true">批量导入</el-button>
       <el-button type="info" @click="downloadTemplate">下载模板</el-button>
-      <el-select v-model.number="filterCategoryId" placeholder="按分类筛选" clearable style="margin-left: 8px; width: 200px">
+      <el-button 
+        type="danger" 
+        :disabled="selectedQuestions.length === 0" 
+        @click="batchDelete"
+        style="margin-left: 8px"
+      >
+        批量删除 ({{ selectedQuestions.length }})
+      </el-button>
+      <el-select v-model.number="filterCategoryId" placeholder="按分类筛选" clearable style="margin-left: 8px; width: 150px">
         <el-option :value="0" label="全部分类" />
         <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
       </el-select>
+      <el-select v-model.number="difficulty" placeholder="按难度筛选" clearable style="margin-left: 8px; width: 120px">
+        <el-option :value="''" label="全部难度" />
+        <el-option :value="1" label="简单" />
+        <el-option :value="2" label="中等" />
+        <el-option :value="3" label="困难" />
+      </el-select>
+      <el-input v-model="keyword" placeholder="搜索题目内容" clearable style="margin-left: 8px; width: 200px" />
       <el-button type="primary" style="margin-left: 8px" @click="onSearch">查询</el-button>
       <el-button style="margin-left: 4px" @click="onReset">重置</el-button>
     </div>
 
-    <el-table :data="questions" border style="width: 100%">
+    <el-table :data="questions" border style="width: 100%" @selection-change="handleSelectionChange" v-loading="loading">
+      <el-table-column type="selection" width="55" align="center" />
       <el-table-column prop="id" label="ID" width="80" align="center" />
       <el-table-column prop="category.name" label="分类" width="160" align="center" />
       <el-table-column prop="content" label="题干" min-width="240" />
@@ -35,6 +51,20 @@
         </template>
       </el-table-column>
     </el-table>
+
+    <!-- 分页组件 -->
+    <div class="pager">
+      <el-pagination
+        background
+        layout="prev, pager, next, sizes, total"
+        :total="total"
+        :page-size="pageSize"
+        :current-page="currentPage"
+        @current-change="handleCurrentChange"
+        @size-change="handleSizeChange"
+        :page-sizes="[10, 20, 50, 100]"
+      />
+    </div>
 
     <el-dialog draggable v-model="showDialog" :title="dialogTitle" width="50%" :before-close="handleClose">
       <el-form :model="form" label-width="90px">
@@ -157,11 +187,18 @@ import { onMounted, ref } from 'vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { UploadFilled } from '@element-plus/icons-vue'
 import axios from 'axios'
-import { getQuizCategories, getQuizQuestionsByCategory, addQuizQuestion, editQuizQuestion, deleteQuizQuestion, importQuizQuestions, downloadQuizTemplate } from '@/api'
+import { getQuizCategories, getQuizQuestions, addQuizQuestion, editQuizQuestion, deleteQuizQuestion, importQuizQuestions, downloadQuizTemplate, batchDeleteQuizQuestions } from '@/api'
 
 const categories = ref([])
 const questions = ref([])
+const selectedQuestions = ref([])
 const filterCategoryId = ref(0)
+const keyword = ref('')
+const difficulty = ref('')
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+const loading = ref(false)
 const showDialog = ref(false)
 const dialogTitle = ref('新增题目')
 const form = ref({
@@ -189,22 +226,42 @@ const loadCategories = async () => {
 }
 
 const load = async () => {
-  if (filterCategoryId.value) {
-    const res = await getQuizQuestionsByCategory(filterCategoryId.value)
-    questions.value = Array.isArray(res) ? res : (res?.data || [])
-  } else {
-    // 简化：无筛选时，尝试加载每个分类并合并
-    const list = []
-    for (const c of categories.value) {
-      const res = await getQuizQuestionsByCategory(c.id)
-      ;(Array.isArray(res) ? res : (res?.data || [])).forEach((x) => list.push(x))
+  try {
+    loading.value = true
+    const params = {
+      page: currentPage.value,
+      pageSize: pageSize.value,
+      categoryId: filterCategoryId.value || undefined,
+      keyword: keyword.value || undefined,
+      difficulty: difficulty.value || undefined
     }
-    questions.value = list
+    
+    const res = await getQuizQuestions(params)
+    
+    // 由于响应拦截器已经提取了data，res就是API返回的数据
+    questions.value = res.data || []
+    total.value = res.total || 0
+    currentPage.value = res.page || 1
+  } catch (error) {
+    console.error('加载题目列表失败:', error)
+    ElMessage.error('加载题目列表失败')
+  } finally {
+    loading.value = false
   }
 }
 
-const onSearch = () => { load() }
-const onReset = () => { filterCategoryId.value = 0; load() }
+const onSearch = () => { 
+  currentPage.value = 1
+  load() 
+}
+
+const onReset = () => { 
+  filterCategoryId.value = 0
+  keyword.value = ''
+  difficulty.value = ''
+  currentPage.value = 1
+  load() 
+}
 
 const reset = () => {
   form.value = { id: null, categoryId: '', content: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: '', difficulty: 1 }
@@ -369,6 +426,55 @@ const downloadTemplate = async () => {
   }
 }
 
+// 分页处理
+const handleSizeChange = (newSize) => {
+  pageSize.value = newSize
+  currentPage.value = 1
+  load()
+}
+
+const handleCurrentChange = (newPage) => {
+  currentPage.value = newPage
+  load()
+}
+
+// 处理表格选择变化
+const handleSelectionChange = (selection) => {
+  selectedQuestions.value = selection
+}
+
+// 批量删除
+const batchDelete = async () => {
+  if (selectedQuestions.value.length === 0) {
+    ElMessage.warning('请选择要删除的题目')
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除选中的 ${selectedQuestions.value.length} 道题目吗？`,
+      '批量删除确认',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
+
+    const ids = selectedQuestions.value.map(q => q.id)
+    await batchDeleteQuizQuestions(ids)
+    
+    ElMessage.success(`成功删除 ${ids.length} 道题目`)
+    selectedQuestions.value = []
+    await load() // 重新加载列表
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('批量删除失败:', error)
+      ElMessage.error(error.response?.data?.message || error.message || '批量删除失败')
+    }
+  }
+}
+
 onMounted(async () => {
   await loadCategories()
   await load()
@@ -378,6 +484,7 @@ onMounted(async () => {
 <style scoped>
 .page { padding: 16px; }
 .toolbar { margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+.pager { margin-top: 12px; display: flex; justify-content: flex-end; }
 input, select { padding: 6px 8px; }
 button { padding: 6px 10px; }
 table { width: 100%; border-collapse: collapse; margin-top: 12px; }

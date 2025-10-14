@@ -119,7 +119,7 @@
 <script setup>
 import { computed, onMounted, ref, onUnmounted } from 'vue'
 import Navbar from '../../components/Navbar.vue'
-import { getQuizCategories, getQuizQuestionsByCategory, submitQuizAnswer, addQuizFavorite, removeQuizFavorite, checkQuizFavorite, getUserQuizStats } from '@/api'
+import { getQuizCategories, getQuizQuestions, submitQuizAnswer, addQuizFavorite, removeQuizFavorite, checkQuizFavorite, getUserQuizStats } from '@/api'
 
 const categories = ref([])
 const selectedCategoryId = ref(null)
@@ -165,8 +165,10 @@ const startQuiz = async () => {
   started.value = true
   loading.value = true
   try {
-    const res = await getQuizQuestionsByCategory(selectedCategoryId.value)
-    questions.value = Array.isArray(res) ? res : (res?.data || [])
+    // 统一新API：通过 categoryId 获取该分类题目（不分页，取足够大页大小）
+    const res = await getQuizQuestions({ categoryId: selectedCategoryId.value, page: 1, pageSize: 9999 })
+    const data = res?.data || res
+    questions.value = data || []
     index.value = 0
     selected.value = ''
     answered.value = false

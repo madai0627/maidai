@@ -126,11 +126,12 @@ export const addQuizCategory = (data) => http.post('/api/quiz/categories', data)
 export const editQuizCategory = (id, data) => http.put(`/api/quiz/categories/${id}`, data)
 export const deleteQuizCategory = (id) => http.delete(`/api/quiz/categories/${id}`)
 
-export const getQuizQuestionsByCategory = (categoryId) =>
-  http.get('/api/quiz/questions', { params: { categoryId } })
+// 题目管理 API
+export const getQuizQuestions = (params) => http.get('/api/quiz/questions', { params })
 export const addQuizQuestion = (data) => http.post('/api/quiz/questions', data)
 export const editQuizQuestion = (id, data) => http.put(`/api/quiz/questions/${id}`, data)
 export const deleteQuizQuestion = (id) => http.delete(`/api/quiz/questions/${id}`)
+export const batchDeleteQuizQuestions = (ids) => http.delete('/api/quiz/questions/batch', { data: { ids } })
 
 // 答题记录 API
 export const submitQuizAnswer = (data) => http.post('/api/quiz/records/submit', data)

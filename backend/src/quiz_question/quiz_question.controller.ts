@@ -7,9 +7,20 @@ export class QuizQuestionController {
   constructor(private readonly service: QuizQuestionService) {}
 
   @Get()
-  findAllByCategory(@Query('categoryId') categoryId?: string) {
-    const id = categoryId ? Number(categoryId) : undefined;
-    return this.service.findAllByCategory(id);
+  findAll(
+    @Query('page') page: string = '1',
+    @Query('pageSize') pageSize: string = '10',
+    @Query('categoryId') categoryId?: string,
+    @Query('keyword') keyword?: string,
+    @Query('difficulty') difficulty?: string
+  ) {
+    return this.service.findAll({
+      page: Number(page),
+      pageSize: Number(pageSize),
+      categoryId: categoryId ? Number(categoryId) : undefined,
+      keyword,
+      difficulty: difficulty ? Number(difficulty) : undefined
+    });
   }
 
   @Post()
@@ -44,6 +55,14 @@ export class QuizQuestionController {
     }>,
   ) {
     return this.service.update(Number(id), body);
+  }
+
+  @Delete('batch')
+  async batchRemove(@Body() body: { ids: number[] }) {
+    if (!body.ids || !Array.isArray(body.ids)) {
+      throw new Error('ids参数必须是数组');
+    }
+    return this.service.batchRemove(body.ids);
   }
 
   @Delete(':id')

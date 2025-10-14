@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { QuizQuestion } from './quiz_question.entity';
 import { QuizCategory } from '../quiz_category/quiz_category.entity';
 import * as XLSX from 'xlsx';
@@ -14,17 +14,53 @@ export class QuizQuestionService {
     private readonly categoryRepo: Repository<QuizCategory>,
   ) {}
 
-  findAllByCategory(categoryId?: number) {
+  async findAll(options: {
+    page: number;
+    pageSize: number;
+    categoryId?: number;
+    keyword?: string;
+    difficulty?: number;
+  }) {
+    const { page, pageSize, categoryId, keyword, difficulty } = options;
+    
+    const queryBuilder = this.questionRepo
+      .createQueryBuilder('question')
+      .leftJoinAndSelect('question.category', 'category');
+
+    // 分类筛选
     if (categoryId) {
-      return this.questionRepo.find({ 
-        where: { category: { id: categoryId } },
-        relations: ['category']
-      });
-    } else {
-      return this.questionRepo.find({ 
-        relations: ['category']
+      queryBuilder.andWhere('category.id = :categoryId', { categoryId });
+    }
+
+    // 关键词搜索（搜索题目内容）
+    if (keyword) {
+      queryBuilder.andWhere('question.content LIKE :keyword', { 
+        keyword: `%${keyword}%` 
       });
     }
+
+    // 难度筛选
+    if (difficulty) {
+      queryBuilder.andWhere('question.difficulty = :difficulty', { difficulty });
+    }
+
+    // 分页
+    const skip = (page - 1) * pageSize;
+    queryBuilder.skip(skip).take(pageSize);
+
+    // 排序
+    queryBuilder.orderBy('question.id', 'DESC');
+
+    // 执行查询
+    const [questions, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      data: questions,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize)
+    };
   }
 
   create(data: {
@@ -73,6 +109,15 @@ export class QuizQuestionService {
 
   remove(id: number) {
     return this.questionRepo.delete(id);
+  }
+
+  async batchRemove(ids: number[]) {
+    const results = [];
+    for (const id of ids) {
+      const result = await this.questionRepo.delete(id);
+      results.push(result);
+    }
+    return { affected: results.reduce((sum, r) => sum + r.affected, 0) };
   }
 
   async seedInterview() {
