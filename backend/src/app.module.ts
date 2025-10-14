@@ -14,6 +14,7 @@ import { QuizCategoryModule } from './quiz_category/quiz_category.module';
 import { QuizQuestionModule } from './quiz_question/quiz_question.module';
 import { QuizRecordModule } from './quiz_record/quiz_record.module';
 import { QuizFavoriteModule } from './quiz_favorite/quiz_favorite.module';
+import { ExcelTemplateModule } from './excel-template/excel-template.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { QuizFavoriteModule } from './quiz_favorite/quiz_favorite.module';
     QuizQuestionModule,
     QuizRecordModule,
     QuizFavoriteModule,
+    ExcelTemplateModule,
   ],
   controllers: [AppController],
   providers: [AppService],

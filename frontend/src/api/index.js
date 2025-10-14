@@ -143,6 +143,16 @@ export const getQuizCategoryStats = (userId) => http.get('/api/quiz/records/cate
 export const getQuizDifficultyStats = (userId) => http.get('/api/quiz/records/difficulty-stats', { params: { userId } })
 export const getQuizWeeklyTrend = (userId) => http.get('/api/quiz/records/weekly-trend', { params: { userId } })
 
+// Excel导入 API
+export const importQuizQuestions = (formData) => http.post('/api/quiz/questions/import-excel', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+})
+
+// Excel模板下载 API
+export const downloadQuizTemplate = () => http.get('/api/quiz/template/download', {
+  responseType: 'blob'
+})
+
 // 收藏功能 API
 export const addQuizFavorite = (data) => http.post('/api/quiz/favorites/add', data)
 export const removeQuizFavorite = (userId, questionId) => http.delete('/api/quiz/favorites/remove', { params: { userId, questionId } })

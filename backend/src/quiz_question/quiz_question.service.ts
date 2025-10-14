@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { QuizQuestion } from './quiz_question.entity';
 import { QuizCategory } from '../quiz_category/quiz_category.entity';
+import * as XLSX from 'xlsx';
 
 @Injectable()
 export class QuizQuestionService {
@@ -13,8 +14,17 @@ export class QuizQuestionService {
     private readonly categoryRepo: Repository<QuizCategory>,
   ) {}
 
-  findAllByCategory(categoryId: number) {
-    return this.questionRepo.find({ where: { category: { id: categoryId } } });
+  findAllByCategory(categoryId?: number) {
+    if (categoryId) {
+      return this.questionRepo.find({ 
+        where: { category: { id: categoryId } },
+        relations: ['category']
+      });
+    } else {
+      return this.questionRepo.find({ 
+        relations: ['category']
+      });
+    }
   }
 
   create(data: {
@@ -145,6 +155,123 @@ export class QuizQuestionService {
     }
 
     return { created: true, categories: [jsCat, vueCat, webCat].map(c => ({ id: c.id, name: c.name })), added: items.length - existing.filter((q: any) => items.find(i => i.content === q.content)).length };
+  }
+
+  async importFromExcel(buffer: Buffer) {
+    try {
+      // 解析Excel文件
+      const workbook = XLSX.read(buffer, { type: 'buffer' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      
+      // 转换为JSON格式
+      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      
+      if (data.length < 2) {
+        throw new Error('Excel文件至少需要包含标题行和一行数据');
+      }
+
+      const headers = data[0] as string[];
+      const rows = data.slice(1) as any[][];
+
+      // 验证表头
+      const requiredHeaders = ['分类', '题目', '选项A', '选项B', '选项C', '选项D', '正确答案', '难度'];
+      const headerMap: { [key: string]: number } = {};
+      
+      requiredHeaders.forEach(header => {
+        const index = headers.findIndex(h => h && h.toString().trim() === header);
+        if (index === -1) {
+          throw new Error(`缺少必要的列：${header}`);
+        }
+        headerMap[header] = index;
+      });
+
+      const results = {
+        success: 0,
+        failed: 0,
+        errors: [] as string[],
+        categories: new Set<string>()
+      };
+
+      // 处理每一行数据
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const rowNum = i + 2; // Excel行号从2开始
+
+        try {
+          // 提取数据
+          const categoryName = row[headerMap['分类']]?.toString().trim();
+          const content = row[headerMap['题目']]?.toString().trim();
+          const optionA = row[headerMap['选项A']]?.toString().trim();
+          const optionB = row[headerMap['选项B']]?.toString().trim();
+          const optionC = row[headerMap['选项C']]?.toString().trim();
+          const optionD = row[headerMap['选项D']]?.toString().trim();
+          const correctAnswer = row[headerMap['正确答案']]?.toString().trim().toUpperCase();
+          const difficulty = parseInt(row[headerMap['难度']]?.toString().trim()) || 1;
+
+          // 验证数据
+          if (!categoryName || !content || !optionA || !optionB || !optionC || !optionD || !correctAnswer) {
+            throw new Error('必填字段不能为空');
+          }
+
+          if (!['A', 'B', 'C', 'D'].includes(correctAnswer)) {
+            throw new Error('正确答案必须是A、B、C、D之一');
+          }
+
+          if (difficulty < 1 || difficulty > 3) {
+            throw new Error('难度必须是1-3之间的数字');
+          }
+
+          // 确保分类存在
+          let category = await this.categoryRepo.findOne({ where: { name: categoryName } });
+          if (!category) {
+            category = this.categoryRepo.create({ name: categoryName });
+            category = await this.categoryRepo.save(category);
+            results.categories.add(categoryName);
+          }
+
+          // 检查题目是否已存在
+          const existing = await this.questionRepo.findOne({
+            where: { content, category: { id: category.id } }
+          });
+
+          if (existing) {
+            throw new Error('题目已存在');
+          }
+
+          // 创建题目
+          const question = this.questionRepo.create({
+            content,
+            optionA,
+            optionB,
+            optionC,
+            optionD,
+            correctAnswer: correctAnswer as 'A' | 'B' | 'C' | 'D',
+            difficulty,
+            category
+          });
+
+          await this.questionRepo.save(question);
+          results.success++;
+
+        } catch (error) {
+          results.failed++;
+          results.errors.push(`第${rowNum}行：${error.message}`);
+        }
+      }
+
+      return {
+        message: 'Excel导入完成',
+        total: rows.length,
+        success: results.success,
+        failed: results.failed,
+        errors: results.errors,
+        newCategories: Array.from(results.categories)
+      };
+
+    } catch (error) {
+      throw new Error(`Excel解析失败：${error.message}`);
+    }
   }
 }
 

@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { QuizQuestionService } from './quiz_question.service';
 
 @Controller('quiz/questions')
@@ -6,8 +7,9 @@ export class QuizQuestionController {
   constructor(private readonly service: QuizQuestionService) {}
 
   @Get()
-  findAllByCategory(@Query('categoryId') categoryId: string) {
-    return this.service.findAllByCategory(Number(categoryId));
+  findAllByCategory(@Query('categoryId') categoryId?: string) {
+    const id = categoryId ? Number(categoryId) : undefined;
+    return this.service.findAllByCategory(id);
   }
 
   @Post()
@@ -52,6 +54,20 @@ export class QuizQuestionController {
   @Post('seed-interview')
   seedInterview() {
     return this.service.seedInterview();
+  }
+
+  @Post('import-excel')
+  @UseInterceptors(FileInterceptor('file'))
+  async importExcel(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new Error('请选择要上传的Excel文件');
+    }
+
+    if (!file.originalname.endsWith('.xlsx') && !file.originalname.endsWith('.xls')) {
+      throw new Error('只支持Excel文件格式(.xlsx, .xls)');
+    }
+
+    return this.service.importFromExcel(file.buffer);
   }
 }
 

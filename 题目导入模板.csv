@@ -1,0 +1,7 @@
+分类,题目,选项A,选项B,选项C,选项D,正确答案,难度
+JavaScript 基础,以下哪个关键字创建函数表达式？,function 关键字,let 关键字,const 关键字,var 关键字,D,1
+JavaScript 基础,关于 this 的指向，下列说法正确的是：,箭头函数的 this 在调用时动态绑定,箭头函数没有自己的 this，取决于定义时外层作用域,call 可以改变箭头函数 this,bind 会立即执行函数,B,1
+JavaScript 基础,数组去重最合适的方式是：,arr.filter(Boolean),new Set(arr) 配合展开,arr.map(),arr.forEach(),B,1
+Vue 框架,Vue 3 的 Composition API 中，响应式数据使用：,data(),ref() 或 reactive(),computed(),watch(),B,2
+Vue 框架,Vue 中 v-model 的本质是：,value + input 事件,value + change 事件,model + update 事件,bind + sync 事件,A,2
+浏览器与性能,浏览器事件循环的执行顺序是：,宏任务 -> 微任务 -> 渲染,微任务 -> 宏任务 -> 渲染,渲染 -> 宏任务 -> 微任务,宏任务 -> 渲染 -> 微任务,A,3

@@ -2,6 +2,8 @@
   <div class="page">
     <div class="toolbar">
       <el-button type="success" @click="addQuestion">新增题目</el-button>
+      <el-button type="primary" @click="showUploadDialog = true">批量导入</el-button>
+      <el-button type="info" @click="downloadTemplate">下载模板</el-button>
       <el-select v-model.number="filterCategoryId" placeholder="按分类筛选" clearable style="margin-left: 8px; width: 200px">
         <el-option :value="0" label="全部分类" />
         <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
@@ -79,13 +81,83 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- Excel上传对话框 -->
+    <el-dialog v-model="showUploadDialog" title="批量导入题目" width="600px">
+      <div class="upload-section">
+        <el-alert title="Excel格式要求" type="info" :closable="false" style="margin-bottom: 20px;">
+          <template #default>
+            <p>请确保Excel文件包含以下列（按顺序）：</p>
+            <ul>
+              <li><strong>分类</strong> - 题目所属分类名称</li>
+              <li><strong>题目</strong> - 题目内容</li>
+              <li><strong>选项A</strong> - 选项A内容</li>
+              <li><strong>选项B</strong> - 选项B内容</li>
+              <li><strong>选项C</strong> - 选项C内容</li>
+              <li><strong>选项D</strong> - 选项D内容</li>
+              <li><strong>正确答案</strong> - A、B、C、D之一</li>
+              <li><strong>难度</strong> - 1(简单)、2(中等)、3(困难)</li>
+            </ul>
+          </template>
+        </el-alert>
+
+        <el-upload
+          ref="uploadRef"
+          :auto-upload="false"
+          :on-change="handleFileChange"
+          :before-upload="beforeUpload"
+          accept=".xlsx,.xls"
+          drag
+          style="width: 100%"
+        >
+          <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+          <div class="el-upload__text">
+            将Excel文件拖到此处，或<em>点击上传</em>
+          </div>
+          <template #tip>
+            <div class="el-upload__tip">
+              只能上传xlsx/xls文件，且不超过10MB
+            </div>
+          </template>
+        </el-upload>
+
+        <div v-if="uploadResult" class="upload-result">
+          <el-alert :title="uploadResult.message" :type="uploadResult.failed > 0 ? 'warning' : 'success'" style="margin-top: 20px;">
+            <template #default>
+              <p>总计：{{ uploadResult.total }} 题</p>
+              <p>成功：{{ uploadResult.success }} 题</p>
+              <p v-if="uploadResult.failed > 0">失败：{{ uploadResult.failed }} 题</p>
+              <p v-if="uploadResult.newCategories.length > 0">新增分类：{{ uploadResult.newCategories.join(', ') }}</p>
+              <div v-if="uploadResult.errors.length > 0" style="margin-top: 10px;">
+                <p><strong>错误详情：</strong></p>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                  <li v-for="error in uploadResult.errors.slice(0, 5)" :key="error">{{ error }}</li>
+                </ul>
+                <p v-if="uploadResult.errors.length > 5">...还有{{ uploadResult.errors.length - 5 }}个错误</p>
+              </div>
+            </template>
+          </el-alert>
+        </div>
+      </div>
+
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="showUploadDialog = false">取消</el-button>
+          <el-button type="primary" @click="handleUpload" :disabled="!selectedFile" :loading="uploading">
+            {{ uploading ? '上传中...' : '开始导入' }}
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
-import { getQuizCategories, getQuizQuestionsByCategory, addQuizQuestion, editQuizQuestion, deleteQuizQuestion } from '@/api'
+import { UploadFilled } from '@element-plus/icons-vue'
+import axios from 'axios'
+import { getQuizCategories, getQuizQuestionsByCategory, addQuizQuestion, editQuizQuestion, deleteQuizQuestion, importQuizQuestions, downloadQuizTemplate } from '@/api'
 
 const categories = ref([])
 const questions = ref([])
@@ -103,6 +175,13 @@ const form = ref({
   correctAnswer: '',
   difficulty: 1
 })
+
+// 上传相关变量
+const showUploadDialog = ref(false)
+const selectedFile = ref(null)
+const uploading = ref(false)
+const uploadResult = ref(null)
+const uploadRef = ref(null)
 
 const loadCategories = async () => {
   const res = await getQuizCategories()
@@ -200,6 +279,94 @@ const getDifficultyType = (difficulty) => {
 const getDifficultyText = (difficulty) => {
   const texts = { 1: '简单', 2: '中等', 3: '困难' }
   return texts[difficulty] || '未知'
+}
+
+// 上传相关方法
+const handleFileChange = (file) => {
+  selectedFile.value = file.raw
+  uploadResult.value = null
+}
+
+const beforeUpload = (file) => {
+  const isExcel = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+                  file.type === 'application/vnd.ms-excel' ||
+                  file.name.endsWith('.xlsx') || 
+                  file.name.endsWith('.xls')
+  
+  if (!isExcel) {
+    ElMessage.error('只能上传Excel文件!')
+    return false
+  }
+  
+  const isLt10M = file.size / 1024 / 1024 < 10
+  if (!isLt10M) {
+    ElMessage.error('文件大小不能超过10MB!')
+    return false
+  }
+  
+  return true
+}
+
+const handleUpload = async () => {
+  if (!selectedFile.value) {
+    ElMessage.error('请选择要上传的文件')
+    return
+  }
+
+  uploading.value = true
+  uploadResult.value = null
+
+  try {
+    const formData = new FormData()
+    formData.append('file', selectedFile.value)
+
+    const res = await importQuizQuestions(formData)
+    uploadResult.value = res
+    
+    if (res.success > 0) {
+      ElMessage.success(`成功导入 ${res.success} 道题目`)
+      await load() // 重新加载题目列表
+      await loadCategories() // 重新加载分类列表
+    }
+    
+    if (res.failed > 0) {
+      ElMessage.warning(`有 ${res.failed} 道题目导入失败，请查看详情`)
+    }
+
+  } catch (error) {
+    console.error('上传失败:', error)
+    ElMessage.error(error.response?.data?.message || error.message || '上传失败')
+  } finally {
+    uploading.value = false
+  }
+}
+
+// 下载模板方法
+const downloadTemplate = async () => {
+  try {
+    // 直接使用axios，避免响应拦截器处理blob数据
+    const response = await axios.get('/api/quiz/template/download', {
+      responseType: 'blob'
+    })
+    
+    // 创建下载链接
+    const blob = new Blob([response.data], { 
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+    })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = '题目导入模板.xlsx'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    
+    ElMessage.success('模板下载成功')
+  } catch (error) {
+    console.error('下载模板失败:', error)
+    ElMessage.error('下载模板失败')
+  }
 }
 
 onMounted(async () => {
