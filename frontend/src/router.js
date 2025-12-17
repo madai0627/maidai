@@ -59,6 +59,12 @@ const routes = [
     name: 'IndexFinance'
   },
   {
+    path: '/index-diary',
+    component: () => import('@/views/diary/Index.vue'),
+    hidden: true,
+    name: 'IndexDiary'
+  },
+  {
     path: '/cat',
     component: Layout,
     redirect: '/cat/cat-type',

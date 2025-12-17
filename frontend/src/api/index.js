@@ -159,3 +159,13 @@ export const addQuizFavorite = (data) => http.post('/api/quiz/favorites/add', da
 export const removeQuizFavorite = (userId, questionId) => http.delete('/api/quiz/favorites/remove', { params: { userId, questionId } })
 export const getQuizFavorites = (userId) => http.get('/api/quiz/favorites/list', { params: { userId } })
 export const checkQuizFavorite = (userId, questionId) => http.get('/api/quiz/favorites/check', { params: { userId, questionId } })
+
+// ========== 日记模块 API ==========
+export const getDiaryList = (params) => http.get('/api/diary/list', { params })
+export const getDiaryDetail = (id, userId) => http.get(`/api/diary/${id}`, { params: { userId } })
+export const createDiary = (data) => http.post('/api/diary/create', data)
+export const updateDiary = (id, userId, data) => http.put(`/api/diary/${id}?userId=${userId}`, data)
+export const deleteDiary = (id, userId) => http.delete(`/api/diary/${id}?userId=${userId}`)
+export const getDiaryMoodStats = (params) => http.get('/api/diary/stats/mood', { params })
+export const getDiaryCalendar = (params) => http.get('/api/diary/calendar', { params })
+export const getDiaryStreak = (userId) => http.get('/api/diary/streak', { params: { userId } })

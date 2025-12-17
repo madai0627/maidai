@@ -8,6 +8,6 @@ async function bootstrap() {
   // Increase body size limits to allow base64 images in JSON bodies
   app.use(json({ limit: '20mb' }));
   app.use(urlencoded({ limit: '20mb', extended: true }));
-  await app.listen(8888, '127.0.0.1');
+  await app.listen(8887, '127.0.0.1');
 }
 bootstrap();

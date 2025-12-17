@@ -27,6 +27,10 @@
                 <el-icon><Star /></el-icon>
                 我的收藏
               </el-button>
+              <el-button type="info" size="large" @click="$router.push('/index-diary')">
+                <el-icon><EditPen /></el-icon>
+                写日记
+              </el-button>
             </div>
           </el-card>
         </div>
@@ -122,7 +126,7 @@
 
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
-import { Document, Warning, Star } from '@element-plus/icons-vue'
+import { Document, Warning, Star, EditPen } from '@element-plus/icons-vue'
 import Navbar from "@/components/Navbar.vue"
 import { getUserQuizStats, getQuizFavorites, getQuizCategoryStats, getQuizDifficultyStats, getQuizWeeklyTrend } from '@/api'
 
