@@ -10,6 +10,9 @@ export class PhotoWall {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ comment: '用户ID' })
+  user_id: number;
+
   // 图片数据：可存储为base64或外链URL，这里存储base64字符串
   @Column('longtext', { comment: '图片Base64或URL' })
   image: string;

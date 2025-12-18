@@ -1,4 +1,5 @@
 export class CreateRecordDto {
+  userId: number;
   amount: number;
   category: string;
   purpose: string;

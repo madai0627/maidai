@@ -18,6 +18,7 @@ export const getFinanceRecordList = (params) => http.get('/api/finance-record/li
 export const editFinanceRecord = (id, data) => http.patch(`/api/finance-record/edit?id=${id}`, data)
 export const deleteFinanceRecord = (id) => http.delete(`/api/finance-record/delete?id=${id}`)
 export const addFinanceRecord = (data) => http.post('/api/finance-record/add', data)
+export const batchDeleteFinanceRecord = (ids) => http.post('/api/finance-record/batch-delete', { ids })
 export const getFinanceRecordMonthlyStats = () => {
   return http.get('/api/finance-record/monthly-stats', { params: { _ts: Date.now() } })
 }

@@ -10,6 +10,9 @@ export class FinanceRecord {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ comment: '用户ID' })
+  user_id: number;
+
   @Column('decimal', { precision: 12, scale: 2, comment: '金额' })
   amount: string;
 

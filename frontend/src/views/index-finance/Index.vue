@@ -174,8 +174,11 @@
 
 <script setup>
 import { ref, onMounted, computed, onBeforeUnmount, nextTick } from 'vue'
+import { useUserStore } from '@/stores/user'
 import { getFinanceBudgetList, addFinanceBudget, getFinanceRecordList, addFinanceRecord, getFinancePurposeList, getFinanceRecordMonthlyStats, getFinanceStatsByPurpose, getFinanceStatsByDay } from '@/api/index.js'
 import { ElMessage } from 'element-plus'
+
+const userStore = useUserStore()
 
 const latestBudget = ref('0.00')
 const budgetForm = ref({ amount: '' })
@@ -416,6 +419,7 @@ const submitRecord = async () => {
   const amount = Math.abs(n)
   
   const payload = {
+    userId: userStore.userId || 1,
     amount: amount,
     category: recordForm.value.category,
     purpose: isIncome.value ? '工资' : recordForm.value.purpose,

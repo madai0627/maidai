@@ -10,17 +10,26 @@ export class PhotoWallService {
     private readonly repo: Repository<PhotoWall>,
   ) {}
 
-  async list(params?: { lastId?: number; limit?: number }) {
+  async list(params?: { lastId?: number; limit?: number; userId?: number }) {
     const qb = this.repo.createQueryBuilder('p').orderBy('p.id', 'DESC');
     if (params?.lastId) qb.where('p.id < :lastId', { lastId: params.lastId });
+    // 如果提供了 userId，则按用户过滤
+    if (params?.userId) {
+      if (params?.lastId) {
+        qb.andWhere('p.user_id = :userId', { userId: params.userId });
+      } else {
+        qb.where('p.user_id = :userId', { userId: params.userId });
+      }
+    }
     const take = Math.min(Math.max(params?.limit || 20, 1), 100);
     qb.take(take);
     const list = await qb.getMany();
     return { code: 0, msg: 'success', data: list };
   }
 
-  async create(data: { image: string; description?: string }) {
+  async create(data: { userId: number; image: string; description?: string }) {
     const entity = this.repo.create({
+      user_id: data.userId,
       image: data.image,
       description: data.description || '',
     });

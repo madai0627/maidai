@@ -1,4 +1,5 @@
 export class QueryRecordDto {
+  userId?: number;
   page?: number;
   pageSize?: number;
   startDate?: string;

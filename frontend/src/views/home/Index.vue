@@ -187,23 +187,18 @@ onMounted(() => {
 
 // 页面激活时刷新数据（从其他页面返回时）
 onActivated(() => {
-  const now = Date.now()
-  // 如果距离上次刷新超过5秒，或者数据为空，则刷新
-  if (now - lastRefreshTime.value > REFRESH_INTERVAL || !overview.value || Object.keys(overview.value).length === 0) {
-    loadHomeData()
-  }
+  // 移除防抖限制，确保数据实时更新
+  loadHomeData()
 })
 
 // 监听路由变化，从其他页面返回时刷新
 watch(() => route.path, (newPath, oldPath) => {
   // 如果从其他页面导航到个人中心，刷新数据
   if (newPath === '/' && oldPath && oldPath !== '/') {
-    const now = Date.now()
-    if (now - lastRefreshTime.value > REFRESH_INTERVAL) {
-      loadHomeData()
-    }
+    // 移除防抖限制，确保数据实时更新
+    loadHomeData()
   }
-})
+}, { immediate: false })
 </script>
 
 <style scoped lang="scss">

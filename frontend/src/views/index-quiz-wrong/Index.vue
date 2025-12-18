@@ -63,9 +63,12 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 import { getWrongQuestions, submitQuizAnswer } from '@/api'
 
 const router = useRouter()
+const userStore = useUserStore()
+
 const wrongQuestions = ref([])
 const reviewing = ref(false)
 const reviewQuestions = ref([])
@@ -74,7 +77,7 @@ const selected = ref('')
 const answered = ref(false)
 const isCorrect = ref(false)
 const loading = ref(false)
-const userId = ref(1) // 简化版，实际应从登录状态获取
+const userId = computed(() => userStore.userId || 1) // 从 userStore 获取，如果没有则默认为 1
 
 const currentReviewQuestion = computed(() => reviewQuestions.value[reviewIndex.value] || {})
 const isLast = computed(() => reviewIndex.value >= reviewQuestions.value.length - 1)

@@ -29,12 +29,14 @@ export class DashboardService {
       const { userId } = dto;
 
       // 并行查询各模块数据
-      const [diaryData, photosData, financeData, studyData] = await Promise.all([
-        this.getDiaryOverview(userId),
-        this.getPhotosOverview(),
-        this.getFinanceOverview(),
-        this.getStudyOverview(userId),
-      ]);
+      const [diaryData, photosData, financeData, studyData] = await Promise.all(
+        [
+          this.getDiaryOverview(userId),
+          this.getPhotosOverview(userId),
+          this.getFinanceOverview(userId),
+          this.getStudyOverview(userId),
+        ],
+      );
 
       return {
         code: 0,
@@ -70,8 +72,8 @@ export class DashboardService {
         studyActivities,
       ] = await Promise.all([
         this.getDiaryActivities(userId, limit),
-        this.getPhotoActivities(limit),
-        this.getFinanceActivities(limit),
+        this.getPhotoActivities(userId, limit),
+        this.getFinanceActivities(userId, limit),
         this.getStudyActivities(userId, limit),
       ]);
 
@@ -154,18 +156,20 @@ export class DashboardService {
 
   /**
    * 获取照片墙模块概览
-   * 注意：PhotoWall 实体没有 user_id 字段，查询所有照片
    */
-  private async getPhotosOverview() {
+  private async getPhotosOverview(userId: number) {
     const today = new Date();
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - today.getDay());
 
-    // PhotoWall 没有 user_id 字段，查询所有照片
+    // 按 user_id 查询照片
     const [total, weekAdded] = await Promise.all([
-      this.photoWallRepo.count(),
+      this.photoWallRepo.count({
+        where: { user_id: userId },
+      }),
       this.photoWallRepo.count({
         where: {
+          user_id: userId,
           created_at: MoreThanOrEqual(weekStart),
         },
       }),
@@ -179,24 +183,26 @@ export class DashboardService {
 
   /**
    * 获取财务模块概览
-   * 注意：FinanceRecord 实体没有 user_id 和 type 字段
    */
-  private async getFinanceOverview() {
+  private async getFinanceOverview(userId: number) {
     const today = new Date();
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - today.getDay());
 
-    // FinanceRecord 没有 user_id 和 type 字段，查询所有记录，所有记录视为支出
+    // 按 user_id 查询财务记录
     const monthExpense = await this.financeRecordRepo
       .createQueryBuilder('record')
       .select('SUM(CAST(record.amount AS DECIMAL(12,2)))', 'sum')
-      .where('YEAR(record.created_at) = YEAR(CURDATE())')
+      .where('record.user_id = :userId', { userId })
+      .andWhere('YEAR(record.created_at) = YEAR(CURDATE())')
       .andWhere('MONTH(record.created_at) = MONTH(CURDATE())')
+      .andWhere('record.category = :category', { category: '支出' })
       .getRawOne();
 
     // 本周记账笔数
     const weekRecords = await this.financeRecordRepo.count({
       where: {
+        user_id: userId,
         created_at: MoreThanOrEqual(weekStart),
       },
     });
@@ -205,7 +211,9 @@ export class DashboardService {
     const weekExpense = await this.financeRecordRepo
       .createQueryBuilder('record')
       .select('SUM(CAST(record.amount AS DECIMAL(12,2)))', 'sum')
-      .where('record.created_at >= :weekStart', { weekStart })
+      .where('record.user_id = :userId', { userId })
+      .andWhere('record.created_at >= :weekStart', { weekStart })
+      .andWhere('record.category = :category', { category: '支出' })
       .getRawOne();
 
     return {
@@ -228,36 +236,80 @@ export class DashboardService {
     weekStart.setDate(today.getDate() - today.getDay());
     weekStart.setHours(0, 0, 0, 0);
 
-    // 今日做题数 - 使用日期范围查询
-    const todayCount = await this.quizRecordRepo
-      .createQueryBuilder('record')
-      .where('record.userId = :userId', { userId })
-      .andWhere('record.createdAt >= :today', { today })
-      .andWhere('record.createdAt <= :todayEnd', { todayEnd })
-      .getCount();
+    try {
+      // 先查询所有记录，看看数据库里有什么
+      const allRecordsInDb = await this.quizRecordRepo.find({});
+      console.log('[Dashboard] getStudyOverview - 数据库所有记录:', {
+        total: allRecordsInDb.length,
+        userIds: [...new Set(allRecordsInDb.map((r) => r.userId))],
+        sampleRecords: allRecordsInDb.slice(0, 3).map((r) => ({
+          id: r.id,
+          userId: r.userId,
+          createdAt: r.createdAt,
+        })),
+      });
 
-    // 本周做题数和正确率
-    const weekStats = await this.quizRecordRepo
-      .createQueryBuilder('record')
-      .select('COUNT(*)', 'total')
-      .addSelect(
-        'SUM(CASE WHEN record.isCorrect = 1 THEN 1 ELSE 0 END)',
-        'correct',
-      )
-      .where('record.userId = :userId', { userId })
-      .andWhere('record.createdAt >= :weekStart', { weekStart })
-      .getRawOne();
+      // 使用 Repository.find 方法，TypeORM 会自动处理字段名转换
+      const allRecords = await this.quizRecordRepo.find({
+        where: { userId },
+      });
 
-    const weekCount = parseInt(weekStats?.total || '0');
-    const correctCount = parseInt(weekStats?.correct || '0');
-    const weekAccuracy =
-      weekCount > 0 ? `${Math.round((correctCount / weekCount) * 100)}%` : '0%';
+      console.log('[Dashboard] getStudyOverview - 查询结果:', {
+        queryUserId: userId,
+        totalRecords: allRecords.length,
+        sampleRecord: allRecords[0]
+          ? {
+              id: allRecords[0].id,
+              userId: allRecords[0].userId,
+              createdAt: allRecords[0].createdAt,
+            }
+          : null,
+      });
 
-    return {
-      todayCount,
-      weekCount,
-      weekAccuracy,
-    };
+      // 今日做题数 - 使用 JavaScript 过滤
+      const todayRecords = allRecords.filter((record) => {
+        const recordDate = new Date(record.createdAt);
+        return recordDate >= today && recordDate <= todayEnd;
+      });
+
+      // 本周做题数 - 使用 JavaScript 过滤
+      const weekRecords = allRecords.filter((record) => {
+        const recordDate = new Date(record.createdAt);
+        return recordDate >= weekStart;
+      });
+
+      const todayCount = todayRecords.length;
+      const weekCount = weekRecords.length;
+      const correctCount = weekRecords.filter((r) => r.isCorrect).length;
+      const weekAccuracy =
+        weekCount > 0
+          ? `${Math.round((correctCount / weekCount) * 100)}%`
+          : '0%';
+
+      console.log('[Dashboard] getStudyOverview - 结果:', {
+        userId,
+        todayCount,
+        weekCount,
+        correctCount,
+        weekAccuracy,
+        today: today.toISOString(),
+        todayEnd: todayEnd.toISOString(),
+        weekStart: weekStart.toISOString(),
+      });
+
+      return {
+        todayCount,
+        weekCount,
+        weekAccuracy,
+      };
+    } catch (error) {
+      console.error('[Dashboard] getStudyOverview - 错误:', error);
+      return {
+        todayCount: 0,
+        weekCount: 0,
+        weekAccuracy: '0%',
+      };
+    }
   }
 
   // ============ 私有方法：各模块活动查询 ============
@@ -284,10 +336,10 @@ export class DashboardService {
 
   /**
    * 获取照片活动
-   * 注意：PhotoWall 没有 user_id 字段，查询所有照片
    */
-  private async getPhotoActivities(limit: number) {
+  private async getPhotoActivities(userId: number, limit: number) {
     const photos = await this.photoWallRepo.find({
+      where: { user_id: userId },
       order: { created_at: 'DESC' },
       take: limit * 2, // 多取一些，用于分组
     });
@@ -306,21 +358,22 @@ export class DashboardService {
 
   /**
    * 获取财务活动
-   * 注意：FinanceRecord 没有 user_id 字段，查询所有记录
    */
-  private async getFinanceActivities(limit: number) {
+  private async getFinanceActivities(userId: number, limit: number) {
     const records = await this.financeRecordRepo.find({
+      where: { user_id: userId },
       order: { created_at: 'DESC' },
       take: limit,
     });
 
     return records.map((record) => {
-      // FinanceRecord 没有 type 字段，默认显示为支出
+      const amount = parseFloat(record.amount);
+      const prefix = record.category === '收入' ? '+' : '-';
       return {
         id: record.id.toString(),
         type: 'finance',
         time: this.formatTime(record.created_at),
-        title: `记账 -${record.amount}元 [${record.purpose || ''}]`,
+        title: `记账 ${prefix}${Math.abs(amount)}元 [${record.purpose || ''}]`,
         actionText: '详情',
         actionUrl: `/finance/${record.id}`,
       };
@@ -333,37 +386,81 @@ export class DashboardService {
   private async getStudyActivities(userId: number, limit: number) {
     const weekStart = new Date();
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    weekStart.setHours(0, 0, 0, 0);
 
-    const stats = await this.quizRecordRepo
-      .createQueryBuilder('record')
-      .select('DATE(record.createdAt)', 'date')
-      .addSelect('COUNT(*)', 'count')
-      .addSelect(
-        'SUM(CASE WHEN record.isCorrect = 1 THEN 1 ELSE 0 END)',
-        'correct',
-      )
-      .addSelect('MAX(record.createdAt)', 'lastTime')
-      .where('record.userId = :userId', { userId })
-      .andWhere('record.createdAt >= :weekStart', { weekStart })
-      .groupBy('DATE(record.createdAt)')
-      .orderBy('date', 'DESC')
-      .limit(limit)
-      .getRawMany();
+    try {
+      // 使用 Repository.find 方法，TypeORM 会自动处理字段名转换
+      const allRecords = await this.quizRecordRepo.find({
+        where: { userId },
+        order: { createdAt: 'DESC' },
+      });
 
-    return stats.map((stat) => {
-      const count = parseInt(stat.count);
-      const correct = parseInt(stat.correct);
-      const accuracy =
-        count > 0 ? `${Math.round((correct / count) * 100)}%` : '0%';
-      return {
-        id: null,
-        type: 'study',
-        time: this.formatTime(stat.lastTime),
-        title: `完成${count}道题，正确率${accuracy}`,
-        actionText: '继续',
-        actionUrl: '/study',
-      };
-    });
+      console.log('[Dashboard] getStudyActivities - 所有记录:', {
+        userId,
+        totalRecords: allRecords.length,
+      });
+
+      // 过滤本周的记录
+      const weekRecords = allRecords.filter((record) => {
+        const recordDate = new Date(record.createdAt);
+        return recordDate >= weekStart;
+      });
+
+      // 按日期分组
+      const groupedByDate = new Map<string, any[]>();
+      weekRecords.forEach((record) => {
+        const dateStr = new Date(record.createdAt).toISOString().split('T')[0];
+        if (!groupedByDate.has(dateStr)) {
+          groupedByDate.set(dateStr, []);
+        }
+        groupedByDate.get(dateStr)!.push(record);
+      });
+
+      // 转换为统计格式
+      const stats = Array.from(groupedByDate.entries())
+        .map(([date, records]) => {
+          const count = records.length;
+          const correct = records.filter((r) => r.isCorrect).length;
+          const accuracy =
+            count > 0 ? `${Math.round((correct / count) * 100)}%` : '0%';
+          const lastTime = records[0].createdAt; // 已按 DESC 排序
+
+          return {
+            date,
+            count: count.toString(),
+            correct: correct.toString(),
+            lastTime,
+            accuracy,
+          };
+        })
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .slice(0, limit);
+
+      console.log('[Dashboard] getStudyActivities - 结果:', {
+        userId,
+        weekStart: weekStart.toISOString(),
+        statsCount: stats.length,
+        stats: stats,
+      });
+
+      return stats.map((stat) => {
+        const count = parseInt(stat.count);
+        const correct = parseInt(stat.correct);
+        const accuracy =
+          count > 0 ? `${Math.round((correct / count) * 100)}%` : '0%';
+        return {
+          id: null,
+          type: 'study',
+          time: this.formatTime(stat.lastTime),
+          title: `完成${count}道题，正确率${accuracy}`,
+          actionText: '继续',
+          actionUrl: '/study',
+        };
+      });
+    } catch (error) {
+      console.error('[Dashboard] getStudyActivities - 错误:', error);
+      return [];
+    }
   }
 
   // ============ 工具方法 ============

@@ -117,7 +117,10 @@
 
 <script setup>
 import { computed, onMounted, ref, onUnmounted } from 'vue'
+import { useUserStore } from '@/stores/user'
 import { getQuizCategories, getQuizQuestions, submitQuizAnswer, addQuizFavorite, removeQuizFavorite, checkQuizFavorite, getUserQuizStats } from '@/api'
+
+const userStore = useUserStore()
 
 const categories = ref([])
 const selectedCategoryId = ref(null)
@@ -130,7 +133,7 @@ const answered = ref(false)
 const isCorrect = ref(false)
 const totalScore = ref(0)
 const completed = ref(false)
-const userId = ref(1) // 简化版，实际应从登录状态获取
+const userId = computed(() => userStore.userId || 1) // 从 userStore 获取，如果没有则默认为 1
 const isFavorited = ref(false)
 const todayStats = ref(null)
 

@@ -92,8 +92,21 @@ export class FinanceRecordService {
     return { code: 0, msg: '删除成功', data: null };
   }
 
+  /**
+   * 批量删除财务记录
+   */
+  async batchRemove(ids: number[]) {
+    if (!ids || ids.length === 0) {
+      return { code: 400, msg: '缺少要删除的记录ID', data: null };
+    }
+
+    await this.repo.delete(ids);
+    return { code: 0, msg: '批量删除成功', data: { ids } };
+  }
+
   async create(dto: CreateRecordDto) {
     const entity = this.repo.create({
+      user_id: dto.userId,
       amount: (dto.amount as any)?.toFixed
         ? (dto.amount as any).toFixed(2)
         : String(dto.amount),
@@ -106,7 +119,7 @@ export class FinanceRecordService {
     return { code: 0, msg: '添加成功', data: entity };
   }
 
-  async getMonthlyStats() {
+  async getMonthlyStats(userId?: number) {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const endOfMonth = new Date(
@@ -120,15 +133,20 @@ export class FinanceRecordService {
     );
 
     // 获取当月支出总额（按分类=支出统计，金额取绝对值汇总）
-    const expenseResult = await this.repo
+    const qb = this.repo
       .createQueryBuilder('record')
       .select('SUM(CAST(record.amount AS DECIMAL(12,2)))', 'total')
       .where('record.created_at BETWEEN :start AND :end', {
         start: startOfMonth,
         end: endOfMonth,
       })
-      .andWhere('record.category = :category', { category: '支出' })
-      .getRawOne();
+      .andWhere('record.category = :category', { category: '支出' });
+
+    if (userId) {
+      qb.andWhere('record.user_id = :userId', { userId });
+    }
+
+    const expenseResult = await qb.getRawOne();
 
     const totalExpense = Math.abs(Number(expenseResult?.total || 0));
 
@@ -143,7 +161,7 @@ export class FinanceRecordService {
     };
   }
 
-  async statsByPurpose(start?: string, end?: string) {
+  async statsByPurpose(start?: string, end?: string, userId?: number) {
     const startDate = start
       ? new Date(start)
       : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -167,9 +185,13 @@ export class FinanceRecordService {
         start: startDate,
         end: endDate,
       })
-      .andWhere('r.category = :category', { category: '支出' })
-      .groupBy('r.purpose')
-      .orderBy('value', 'DESC');
+      .andWhere('r.category = :category', { category: '支出' });
+
+    if (userId) {
+      qb.andWhere('r.user_id = :userId', { userId });
+    }
+
+    qb.groupBy('r.purpose').orderBy('value', 'DESC');
 
     const rows = await qb.getRawMany<{ purpose: string; value: string }>();
     const data = rows.map((r) => ({
@@ -179,7 +201,7 @@ export class FinanceRecordService {
     return { code: 0, msg: 'success', data };
   }
 
-  async statsByDay(start?: string, end?: string) {
+  async statsByDay(start?: string, end?: string, userId?: number) {
     const startDate = start
       ? new Date(start)
       : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -196,7 +218,7 @@ export class FinanceRecordService {
         );
 
     // 按天汇总收入/支出
-    const rows = await this.repo
+    const qb = this.repo
       .createQueryBuilder('r')
       .select("DATE_FORMAT(r.created_at, '%Y-%m-%d')", 'day')
       .addSelect(
@@ -210,7 +232,13 @@ export class FinanceRecordService {
       .where('r.created_at BETWEEN :start AND :end', {
         start: startDate,
         end: endDate,
-      })
+      });
+
+    if (userId) {
+      qb.andWhere('r.user_id = :userId', { userId });
+    }
+
+    const rows = await qb
       .groupBy('day')
       .orderBy('day', 'ASC')
       .getRawMany<{ day: string; income: string; expense: string }>();

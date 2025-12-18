@@ -32,6 +32,12 @@ export class FinanceRecordController {
     return this.service.remove(+id);
   }
 
+  // 批量删除
+  @Post('batch-delete')
+  batchDelete(@Body('ids') ids: number[]) {
+    return this.service.batchRemove(ids?.map((id) => +id) || []);
+  }
+
   @Post('add')
   add(@Body() dto: CreateRecordDto) {
     return this.service.create(dto);
@@ -41,17 +47,33 @@ export class FinanceRecordController {
   @Header('Pragma', 'no-cache')
   @Header('Expires', '0')
   @Get('monthly-stats')
-  getMonthlyStats() {
-    return this.service.getMonthlyStats();
+  getMonthlyStats(@Query('userId') userId?: number) {
+    return this.service.getMonthlyStats(userId ? +userId : undefined);
   }
 
   @Get('stats-by-purpose')
-  statsByPurpose(@Query('start') start?: string, @Query('end') end?: string) {
-    return this.service.statsByPurpose(start, end);
+  statsByPurpose(
+    @Query('start') start?: string,
+    @Query('end') end?: string,
+    @Query('userId') userId?: number,
+  ) {
+    return this.service.statsByPurpose(
+      start,
+      end,
+      userId ? +userId : undefined,
+    );
   }
 
   @Get('stats-by-day')
-  statsByDay(@Query('start') start?: string, @Query('end') end?: string) {
-    return this.service.statsByDay(start, end);
+  statsByDay(
+    @Query('start') start?: string,
+    @Query('end') end?: string,
+    @Query('userId') userId?: number,
+  ) {
+    return this.service.statsByDay(
+      start,
+      end,
+      userId ? +userId : undefined,
+    );
   }
 }

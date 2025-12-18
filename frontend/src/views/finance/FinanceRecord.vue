@@ -33,11 +33,17 @@
       <el-form-item>
         <el-button type="success" @click="addRecord">新增记录</el-button>
       </el-form-item>
+      <el-form-item>
+        <el-button type="danger" :disabled="!selectedIds.length" @click="batchDelete">
+          批量删除
+        </el-button>
+      </el-form-item>
     </el-form>
   </div>
 
-  <el-table :data="recordList" border style="width: 100%" max-height="800">
-    <el-table-column prop="id" label="id" width="100" align="center" />
+  <el-table :data="recordList" border style="width: 100%" max-height="800" @selection-change="handleSelectionChange">
+  <el-table-column type="selection" width="55" align="center" />
+  <el-table-column prop="id" label="id" width="100" align="center" />
     <el-table-column prop="amount" label="金额(¥)" width="140" align="center" />
     <el-table-column prop="category" label="分类" width="160" align="center" />
     <el-table-column prop="purpose" label="用途" min-width="200" align="center" />
@@ -90,11 +96,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getFinanceRecordList, editFinanceRecord, deleteFinanceRecord, addFinanceRecord, getFinancePurposeList } from '@/api/index.js'
+import { getFinanceRecordList, editFinanceRecord, deleteFinanceRecord, addFinanceRecord, getFinancePurposeList, batchDeleteFinanceRecord } from '@/api/index.js'
 import { ElMessageBox, ElMessage } from 'element-plus'
 
 const recordList = ref([])
 const total = ref(0)
+const selectedIds = ref([])
 
 const filters = ref({
   page: 1,
@@ -148,6 +155,10 @@ const getList = async () => {
   recordList.value.forEach(item => item.created_at = window.Util.transformTime(item.created_at))
 }
 
+const handleSelectionChange = (rows) => {
+  selectedIds.value = rows.map(r => r.id)
+}
+
 const editRecord = (row) => {
   form.value = { id: row.id, amount: row.amount, category: row.category, purpose: row.purpose, remark: row.remark }
   dialogTitle.value = '编辑记录'
@@ -177,6 +188,23 @@ const deleteRecord = (id) => {
     const res = await deleteFinanceRecord(id)
     if (res.code != 0) { ElMessage.error(res.msg || '删除失败'); return }
     ElMessage.success('删除成功')
+    getList()
+  })
+}
+
+const batchDelete = () => {
+  if (!selectedIds.value.length) return
+  ElMessageBox.confirm(`确定删除选中的 ${selectedIds.value.length} 条记录吗？`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+    const res = await batchDeleteFinanceRecord(selectedIds.value)
+    if (res.code != 0) {
+      ElMessage.error(res.msg || '批量删除失败'); return
+    }
+    ElMessage.success('批量删除成功')
+    selectedIds.value = []
     getList()
   })
 }

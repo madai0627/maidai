@@ -100,8 +100,11 @@
 import { ref, onMounted, onBeforeUnmount, nextTick, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Delete, Edit } from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/user'
 import { getPhotoWallList, addPhotoWall, uploadPhotoTemp, deletePhotoWall } from '@/api/index.js'
 import { editPhotoWall } from '@/api/index.js'
+
+const userStore = useUserStore()
 
 const showDialog = ref(false)
 const tempPreview = ref('')
@@ -141,7 +144,8 @@ const doUpload = async ({ file }) => {
 
 const submit = async () => {
   if (!tempPayload.value) { ElMessage.error('请先选择图片'); return }
-  const res = await addPhotoWall({ image: tempPayload.value.base64, description: form.value.description })
+  const userId = userStore.userId || 1
+  const res = await addPhotoWall({ userId, image: tempPayload.value.base64, description: form.value.description })
   if (res.code !== 0) { ElMessage.error(res.msg || '提交失败'); return }
   ElMessage.success('已添加')
   showDialog.value = false

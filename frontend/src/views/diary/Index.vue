@@ -109,6 +109,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus, Search } from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/user'
 import DiaryList from './components/DiaryList.vue'
 import DiaryEdit from './components/DiaryEdit.vue'
 import DiaryDetail from './components/DiaryDetail.vue'
@@ -116,11 +117,10 @@ import DiaryStats from './components/DiaryStats.vue'
 import { MOOD_TYPES, MOOD_LABELS } from '@/constants/diary.js'
 import { getDiaryList, deleteDiary } from '@/api/index.js'
 
-// 用户ID（从localStorage获取）
-const userId = computed(() => {
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
-  return user.id || 1
-})
+const userStore = useUserStore()
+
+// 用户ID（从 userStore 获取，与个人中心保持一致）
+const userId = computed(() => userStore.userId || 1)
 
 // 列表数据
 const diaryList = ref([])

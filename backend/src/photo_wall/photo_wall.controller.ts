@@ -17,15 +17,20 @@ export class PhotoWallController {
   constructor(private readonly service: PhotoWallService) {}
 
   @Get('list')
-  list(@Query('lastId') lastId?: number, @Query('limit') limit?: number) {
+  list(
+    @Query('lastId') lastId?: number,
+    @Query('limit') limit?: number,
+    @Query('userId') userId?: number,
+  ) {
     return this.service.list({
       lastId: lastId ? +lastId : undefined,
       limit: limit ? +limit : undefined,
+      userId: userId ? +userId : undefined,
     });
   }
 
   @Post('add')
-  add(@Body() dto: { image: string; description?: string }) {
+  add(@Body() dto: { userId: number; image: string; description?: string }) {
     return this.service.create(dto);
   }
 
