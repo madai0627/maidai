@@ -1,4 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('finance_budget')
 export class FinanceBudget {
@@ -11,5 +16,3 @@ export class FinanceBudget {
   @UpdateDateColumn({ comment: '修改时间' })
   updated_at: Date;
 }
-
-

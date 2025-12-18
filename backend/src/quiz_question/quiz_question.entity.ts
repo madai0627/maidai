@@ -30,5 +30,3 @@ export class QuizQuestion {
   @ManyToOne(() => QuizCategory, { eager: true, onDelete: 'CASCADE' })
   category: QuizCategory;
 }
-
-

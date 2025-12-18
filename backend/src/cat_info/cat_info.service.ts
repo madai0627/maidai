@@ -136,7 +136,12 @@ export class CatInfoService {
       }
 
       // 验证文件类型
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      const allowedTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+      ];
       if (!allowedTypes.includes(file.mimetype)) {
         return {
           code: 400,

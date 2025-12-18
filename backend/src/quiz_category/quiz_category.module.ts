@@ -10,5 +10,3 @@ import { QuizCategoryController } from './quiz_category.controller';
   providers: [QuizCategoryService],
 })
 export class QuizCategoryModule {}
-
-

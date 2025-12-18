@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { QuizQuestionService } from './quiz_question.service';
 
@@ -12,14 +23,14 @@ export class QuizQuestionController {
     @Query('pageSize') pageSize: string = '10',
     @Query('categoryId') categoryId?: string,
     @Query('keyword') keyword?: string,
-    @Query('difficulty') difficulty?: string
+    @Query('difficulty') difficulty?: string,
   ) {
     return this.service.findAll({
       page: Number(page),
       pageSize: Number(pageSize),
       categoryId: categoryId ? Number(categoryId) : undefined,
       keyword,
-      difficulty: difficulty ? Number(difficulty) : undefined
+      difficulty: difficulty ? Number(difficulty) : undefined,
     });
   }
 
@@ -43,13 +54,14 @@ export class QuizQuestionController {
   @Put(':id')
   update(
     @Param('id') id: string,
-    @Body() body: Partial<{ 
-      content: string; 
-      optionA: string; 
-      optionB: string; 
-      optionC: string; 
-      optionD: string; 
-      correctAnswer: 'A' | 'B' | 'C' | 'D'; 
+    @Body()
+    body: Partial<{
+      content: string;
+      optionA: string;
+      optionB: string;
+      optionC: string;
+      optionD: string;
+      correctAnswer: 'A' | 'B' | 'C' | 'D';
       categoryId: number;
       difficulty?: number;
     }>,
@@ -82,12 +94,13 @@ export class QuizQuestionController {
       throw new Error('请选择要上传的Excel文件');
     }
 
-    if (!file.originalname.endsWith('.xlsx') && !file.originalname.endsWith('.xls')) {
+    if (
+      !file.originalname.endsWith('.xlsx') &&
+      !file.originalname.endsWith('.xls')
+    ) {
       throw new Error('只支持Excel文件格式(.xlsx, .xls)');
     }
 
     return this.service.importFromExcel(file.buffer);
   }
 }
-
-

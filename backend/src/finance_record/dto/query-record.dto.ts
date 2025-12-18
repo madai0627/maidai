@@ -10,5 +10,3 @@ export class QueryRecordDto {
   sortBy?: 'amount';
   order?: 'ASC' | 'DESC';
 }
-
-

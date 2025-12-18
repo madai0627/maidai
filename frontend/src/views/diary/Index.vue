@@ -1,5 +1,4 @@
 <template>
-  <Navbar />
   <div class="diary-page">
     <!-- 页面头部 -->
     <div class="page-header">
@@ -110,7 +109,6 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus, Search } from '@element-plus/icons-vue'
-import Navbar from '@/components/Navbar.vue'
 import DiaryList from './components/DiaryList.vue'
 import DiaryEdit from './components/DiaryEdit.vue'
 import DiaryDetail from './components/DiaryDetail.vue'

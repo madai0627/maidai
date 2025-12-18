@@ -1,18 +1,18 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-// 确保从你的路由文件中导入路由实例
+// 导入路由实例（从新的 router/index.js）
 import router from './router'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
-import { createPinia } from 'pinia'
+import pinia from './stores'
 import jQuery from 'jquery'
 import Util from '@/util/util'
+import '@/styles/index.scss'
 
 window.$ = window.jQuery = jQuery
 
 const app = createApp(App)
-const pinia = createPinia()
 window.Util = Util
 
 // 注册 Element Plus 图标

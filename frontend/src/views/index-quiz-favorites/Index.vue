@@ -1,5 +1,4 @@
 <template>
-  <Navbar />
   <div class="favorites-page">
     <el-card class="header-card" shadow="hover">
       <div class="header-content">
@@ -61,7 +60,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import Navbar from '../../components/Navbar.vue'
 import { getQuizFavorites, removeQuizFavorite, submitQuizAnswer } from '@/api'
 
 const router = useRouter()

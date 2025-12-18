@@ -10,5 +10,3 @@ import { FinanceRecordController } from './finance_record.controller';
   providers: [FinanceRecordService],
 })
 export class FinanceRecordModule {}
-
-

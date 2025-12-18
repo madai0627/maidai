@@ -4,5 +4,3 @@ export class UpdateRecordDto {
   purpose?: string;
   remark?: string;
 }
-
-

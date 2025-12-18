@@ -48,9 +48,12 @@ export class QuizRecordService {
     });
 
     const total = records.length;
-    const correct = records.filter(r => r.isCorrect).length;
-    const totalScore = records.reduce((sum, r) => sum + (r.isCorrect ? r.score : 0), 0);
-    const accuracy = total > 0 ? (correct / total * 100).toFixed(1) : '0.0';
+    const correct = records.filter((r) => r.isCorrect).length;
+    const totalScore = records.reduce(
+      (sum, r) => sum + (r.isCorrect ? r.score : 0),
+      0,
+    );
+    const accuracy = total > 0 ? ((correct / total) * 100).toFixed(1) : '0.0';
 
     return {
       totalQuestions: total,
@@ -76,7 +79,7 @@ export class QuizRecordService {
     });
 
     const categoryMap = new Map();
-    records.forEach(record => {
+    records.forEach((record) => {
       const categoryName = record.question.category.name;
       if (categoryMap.has(categoryName)) {
         categoryMap.set(categoryName, categoryMap.get(categoryName) + 1);
@@ -85,7 +88,10 @@ export class QuizRecordService {
       }
     });
 
-    return Array.from(categoryMap.entries()).map(([name, value]) => ({ name, value }));
+    return Array.from(categoryMap.entries()).map(([name, value]) => ({
+      name,
+      value,
+    }));
   }
 
   async getDifficultyStats(userId: number) {
@@ -95,17 +101,24 @@ export class QuizRecordService {
     });
 
     const difficultyMap = new Map();
-    records.forEach(record => {
+    records.forEach((record) => {
       const difficulty = record.question.difficulty || 1;
-      const difficultyText = difficulty === 1 ? '简单' : difficulty === 2 ? '中等' : '困难';
+      const difficultyText =
+        difficulty === 1 ? '简单' : difficulty === 2 ? '中等' : '困难';
       if (difficultyMap.has(difficultyText)) {
-        difficultyMap.set(difficultyText, difficultyMap.get(difficultyText) + 1);
+        difficultyMap.set(
+          difficultyText,
+          difficultyMap.get(difficultyText) + 1,
+        );
       } else {
         difficultyMap.set(difficultyText, 1);
       }
     });
 
-    return Array.from(difficultyMap.entries()).map(([name, value]) => ({ name, value }));
+    return Array.from(difficultyMap.entries()).map(([name, value]) => ({
+      name,
+      value,
+    }));
   }
 
   async getWeeklyTrend(userId: number) {
@@ -118,25 +131,32 @@ export class QuizRecordService {
     const now = new Date();
     const weekData = [];
     const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-    
+
     for (let i = 6; i >= 0; i--) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
-      const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const dayStart = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+      );
       const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
-      
-      const dayRecords = records.filter(record => {
+
+      const dayRecords = records.filter((record) => {
         const recordDate = new Date(record.createdAt);
         return recordDate >= dayStart && recordDate < dayEnd;
       });
 
       const questionCount = dayRecords.length;
-      const score = dayRecords.reduce((sum, record) => sum + (record.isCorrect ? record.score : 0), 0);
+      const score = dayRecords.reduce(
+        (sum, record) => sum + (record.isCorrect ? record.score : 0),
+        0,
+      );
 
       weekData.push({
         day: days[date.getDay()],
         questions: questionCount,
-        score: score
+        score: score,
       });
     }
 

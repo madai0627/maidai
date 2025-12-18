@@ -17,10 +17,12 @@ export class FinanceBudgetService {
   }
 
   async create(dto: CreateFinanceBudgetDto) {
-    const entity = this.repo.create({ amount: (dto.amount as any)?.toFixed ? (dto.amount as any).toFixed(2) : String(dto.amount) });
+    const entity = this.repo.create({
+      amount: (dto.amount as any)?.toFixed
+        ? (dto.amount as any).toFixed(2)
+        : String(dto.amount),
+    });
     await this.repo.save(entity);
     return { code: 0, msg: '添加成功', data: entity };
   }
 }
-
-

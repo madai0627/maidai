@@ -1,5 +1,4 @@
 <template>
-  <Navbar />
   <div class="finance-index">
     <div class="left-pane">
       <el-card class="budget-card" shadow="hover">
@@ -177,7 +176,6 @@
 import { ref, onMounted, computed, onBeforeUnmount, nextTick } from 'vue'
 import { getFinanceBudgetList, addFinanceBudget, getFinanceRecordList, addFinanceRecord, getFinancePurposeList, getFinanceRecordMonthlyStats, getFinanceStatsByPurpose, getFinanceStatsByDay } from '@/api/index.js'
 import { ElMessage } from 'element-plus'
-import Navbar from '../../components/Navbar.vue'
 
 const latestBudget = ref('0.00')
 const budgetForm = ref({ amount: '' })

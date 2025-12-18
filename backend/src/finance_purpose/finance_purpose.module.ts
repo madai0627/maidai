@@ -10,5 +10,3 @@ import { FinancePurposeController } from './finance_purpose.controller';
   providers: [FinancePurposeService],
 })
 export class FinancePurposeModule {}
-
-

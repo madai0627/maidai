@@ -1,4 +1,9 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('finance_record')
 export class FinanceRecord {
@@ -20,5 +25,3 @@ export class FinanceRecord {
   @CreateDateColumn({ comment: '时间' })
   created_at: Date;
 }
-
-

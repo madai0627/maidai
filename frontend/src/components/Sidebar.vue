@@ -2,7 +2,7 @@
   <el-menu
     :default-active="activeMenu"
     class="sidebar-menu"
-    :collapse="useUserStore.isCloseSide"
+    :collapse="appStore.sidebarCollapsed"
     background-color="#304156"
     text-color="#bfcbd9"
     active-text-color="#409EFF"
@@ -41,14 +41,16 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import userStore from '@/store'
+import { useAppStore } from '@/stores/app'
 
 const route = useRoute()
 const router = useRouter()
-const useUserStore = userStore()
+const appStore = useAppStore()
 
+// 获取管理后台路由（从 /admin 路由的 children 中获取）
 const routes = computed(() => {
-  return router.options.routes.filter(item => !item.hidden)
+  const adminRoute = router.options.routes.find(r => r.path === '/admin')
+  return adminRoute?.children || []
 })
 
 const activeMenu = computed(() => {

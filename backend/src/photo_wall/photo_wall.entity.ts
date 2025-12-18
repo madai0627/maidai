@@ -1,4 +1,9 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('photo_wall')
 export class PhotoWall {
@@ -15,5 +20,3 @@ export class PhotoWall {
   @CreateDateColumn({ comment: '创建时间' })
   created_at: Date;
 }
-
-

@@ -8,5 +8,3 @@ export class QuizCategory {
   @Column({ unique: true })
   name: string;
 }
-
-

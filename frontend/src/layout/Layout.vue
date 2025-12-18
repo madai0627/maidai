@@ -3,7 +3,7 @@
     <el-aside width="200px">
       <Sidebar />
     </el-aside>
-    <el-container :class="{'el-container': true, isclose: useUserStore.isCloseSide}">
+    <el-container :class="{'el-container': true, isclose: appStore.sidebarCollapsed}">
       <el-header>
         <Navbar />
       </el-header>
@@ -19,8 +19,8 @@
 import Sidebar from "@/components/Sidebar.vue";
 import Navbar from "@/components/Navbar.vue";
 import Breadcrumb from "@/components/Breadcrumb.vue";
-import userStore from '@/store'
-const useUserStore = userStore()
+import { useAppStore } from '@/stores/app'
+const appStore = useAppStore()
 
 </script>
 

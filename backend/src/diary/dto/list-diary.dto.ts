@@ -22,7 +22,9 @@ export class ListDiaryDto {
   pageSize?: number;
 
   @IsOptional()
-  @IsIn([...MOOD_TYPES], { message: '情绪必须是 happy/good/neutral/sad/angry 之一' })
+  @IsIn([...MOOD_TYPES], {
+    message: '情绪必须是 happy/good/neutral/sad/angry 之一',
+  })
   mood?: string;
 
   @IsOptional()
@@ -69,4 +71,3 @@ export class CalendarDto {
   @IsString()
   month?: string; // 格式: YYYY-MM
 }
-

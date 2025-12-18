@@ -11,5 +11,3 @@ import { QuizCategory } from '../quiz_category/quiz_category.entity';
   providers: [QuizQuestionService],
 })
 export class QuizQuestionModule {}
-
-

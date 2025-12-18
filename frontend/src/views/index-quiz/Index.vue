@@ -1,5 +1,4 @@
 <template>
-  <Navbar />
   <div class="quiz-index">
     <el-card class="select-card" shadow="hover">
       <div class="form-row">
@@ -108,8 +107,8 @@
         </div>
         <div class="result-actions">
           <el-button type="primary" size="small" @click="resetQuiz">重新开始</el-button>
-          <el-button size="small" @click="$router.push('/index-quiz-wrong')">查看错题</el-button>
-          <el-button size="small" @click="$router.push('/index-quiz-favorites')">我的收藏</el-button>
+          <el-button size="small" @click="$router.push('/study/wrong')">查看错题</el-button>
+          <el-button size="small" @click="$router.push('/study/favorites')">我的收藏</el-button>
         </div>
       </div>
     </el-card>
@@ -118,7 +117,6 @@
 
 <script setup>
 import { computed, onMounted, ref, onUnmounted } from 'vue'
-import Navbar from '../../components/Navbar.vue'
 import { getQuizCategories, getQuizQuestions, submitQuizAnswer, addQuizFavorite, removeQuizFavorite, checkQuizFavorite, getUserQuizStats } from '@/api'
 
 const categories = ref([])

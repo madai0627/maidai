@@ -13,7 +13,10 @@ export class FinancePurposeService {
   ) {}
 
   async create(dto: CreateFinancePurposeDto) {
-    const entity = this.repo.create({ purpose: dto.purpose, remark: dto.remark || '' });
+    const entity = this.repo.create({
+      purpose: dto.purpose,
+      remark: dto.remark || '',
+    });
     await this.repo.save(entity);
     return { code: 0, msg: '添加成功', data: entity };
   }
@@ -38,5 +41,3 @@ export class FinancePurposeService {
     return { code: 0, msg: '删除成功', data: null };
   }
 }
-
-

@@ -1,9 +1,5 @@
 <template>
-  <el-container class="layout-container">
-    <el-header>
-      <Navbar />
-    </el-header>
-    <el-main>
+  <div class="photos-page">
       <div class="toolbar">
         <el-button type="primary" @click="openDialog">上传照片</el-button>
       </div>
@@ -97,12 +93,10 @@
 
       <!-- 回到顶部悬浮按钮 -->
       <el-backtop :right="24" :bottom="24" />
-    </el-main>
-  </el-container>
+  </div>
 </template>
 
 <script setup>
-import Navbar from "@/components/Navbar.vue";
 import { ref, onMounted, onBeforeUnmount, nextTick, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Delete, Edit } from '@element-plus/icons-vue'

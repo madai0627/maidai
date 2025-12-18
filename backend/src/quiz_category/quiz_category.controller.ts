@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { QuizCategoryService } from './quiz_category.service';
 
 @Controller('quiz/categories')
@@ -25,5 +33,3 @@ export class QuizCategoryController {
     return this.service.remove(Number(id));
   }
 }
-
-

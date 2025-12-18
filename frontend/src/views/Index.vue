@@ -1,9 +1,5 @@
 <template>
-  <el-container class="layout-container">
-    <el-header>
-      <Navbar />
-    </el-header>
-    <el-main class="main-content">
+  <div class="main-content">
       <div class="dashboard">
         
         <!-- 快速操作 -->
@@ -11,25 +7,40 @@
           <el-card class="action-card" shadow="hover">
             <template #header>
               <div class="card-header">
-                <span>快速开始</span>
+                <span>快速操作</span>
               </div>
             </template>
             <div class="action-buttons">
-              <el-button type="primary" size="large" @click="$router.push('/index-quiz')">
+              <!-- 日记模块 -->
+              <el-button type="info" size="large" @click="$router.push('/diary')">
+                <el-icon><EditPen /></el-icon>
+                写日记
+              </el-button>
+              
+              <!-- 照片墙模块 -->
+              <el-button type="success" size="large" @click="$router.push('/photos')">
+                <el-icon><Picture /></el-icon>
+                照片墙
+              </el-button>
+              
+              <!-- 财务模块 -->
+              <el-button type="warning" size="large" @click="$router.push('/finance')">
+                <el-icon><Coin /></el-icon>
+                记一笔
+              </el-button>
+              
+              <!-- 学习模块 -->
+              <el-button type="primary" size="large" @click="$router.push('/study')">
                 <el-icon><Document /></el-icon>
                 开始做题
               </el-button>
-              <el-button type="success" size="large" @click="$router.push('/index-quiz-wrong')">
+              <el-button type="success" size="large" @click="$router.push('/study/wrong')">
                 <el-icon><Warning /></el-icon>
                 复习错题
               </el-button>
-              <el-button type="warning" size="large" @click="$router.push('/index-quiz-favorites')">
+              <el-button type="warning" size="large" @click="$router.push('/study/favorites')">
                 <el-icon><Star /></el-icon>
                 我的收藏
-              </el-button>
-              <el-button type="info" size="large" @click="$router.push('/index-diary')">
-                <el-icon><EditPen /></el-icon>
-                写日记
               </el-button>
             </div>
           </el-card>
@@ -120,14 +131,12 @@
           </el-row>
         </div>
       </div>
-    </el-main>
-  </el-container>
+  </div>
 </template>
 
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
-import { Document, Warning, Star, EditPen } from '@element-plus/icons-vue'
-import Navbar from "@/components/Navbar.vue"
+import { Document, Warning, Star, EditPen, Picture, Coin } from '@element-plus/icons-vue'
 import { getUserQuizStats, getQuizFavorites, getQuizCategoryStats, getQuizDifficultyStats, getQuizWeeklyTrend } from '@/api'
 
 const stats = ref({
@@ -264,14 +273,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.layout-container {
-  height: 100vh;
-}
-
-.main-content {
-  padding: 20px;
-  background: #f5f7fa;
-}
+/* AppLayout 已经提供了 padding 和 background，这里不需要额外样式 */
 
 .dashboard {
   max-width: 1200px;

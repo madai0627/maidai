@@ -10,5 +10,3 @@ import { FinanceBudgetController } from './finance_budget.controller';
   providers: [FinanceBudgetService],
 })
 export class FinanceBudgetModule {}
-
-

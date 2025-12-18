@@ -27,5 +27,3 @@ export class QuizCategoryService {
     return this.repo.delete(id);
   }
 }
-
-

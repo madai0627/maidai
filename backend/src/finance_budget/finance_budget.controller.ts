@@ -16,5 +16,3 @@ export class FinanceBudgetController {
     return this.service.create(dto);
   }
 }
-
-

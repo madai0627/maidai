@@ -74,4 +74,3 @@ export const MOOD_LABELS = {
   sad: { emoji: '😢', label: '低落', color: '#e6a23c' },
   angry: { emoji: '😠', label: '烦躁', color: '#f56c6c' },
 };
-

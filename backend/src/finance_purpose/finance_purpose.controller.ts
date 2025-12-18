@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { FinancePurposeService } from './finance_purpose.service';
 import { CreateFinancePurposeDto } from './dto/create-finance_purpose.dto';
 import { UpdateFinancePurposeDto } from './dto/update-finance_purpose.dto';
@@ -27,5 +35,3 @@ export class FinancePurposeController {
     return this.service.remove(+id);
   }
 }
-
-

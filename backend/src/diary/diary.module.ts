@@ -11,4 +11,3 @@ import { DiaryController } from './diary.controller';
   exports: [DiaryService], // 导出供其他模块使用
 })
 export class DiaryModule {}
-

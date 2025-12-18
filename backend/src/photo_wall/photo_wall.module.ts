@@ -10,5 +10,3 @@ import { PhotoWallController } from './photo_wall.controller';
   controllers: [PhotoWallController],
 })
 export class PhotoWallModule {}
-
-

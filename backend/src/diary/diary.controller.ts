@@ -100,4 +100,3 @@ export class DiaryController {
     return this.diaryService.remove(id, userId);
   }
 }
-

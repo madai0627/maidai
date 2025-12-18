@@ -16,9 +16,9 @@ export class QuizFavoriteService {
   async addFavorite(userId: number, questionId: number) {
     // 检查是否已收藏
     const existing = await this.favoriteRepo.findOne({
-      where: { userId, question: { id: questionId } }
+      where: { userId, question: { id: questionId } },
     });
-    
+
     if (existing) {
       return { message: '已收藏过该题目' };
     }
@@ -37,9 +37,9 @@ export class QuizFavoriteService {
   async removeFavorite(userId: number, questionId: number) {
     const result = await this.favoriteRepo.delete({
       userId,
-      question: { id: questionId }
+      question: { id: questionId },
     });
-    
+
     return { deleted: result.affected > 0 };
   }
 
@@ -53,7 +53,7 @@ export class QuizFavoriteService {
 
   async isFavorite(userId: number, questionId: number) {
     const favorite = await this.favoriteRepo.findOne({
-      where: { userId, question: { id: questionId } }
+      where: { userId, question: { id: questionId } },
     });
     return !!favorite;
   }

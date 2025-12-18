@@ -82,7 +82,8 @@ export class DiaryService {
       if (dto.title !== undefined) updateData.title = dto.title;
       if (dto.content !== undefined) updateData.content = dto.content;
       if (dto.mood !== undefined) updateData.mood = dto.mood;
-      if (dto.diaryDate !== undefined) updateData.diary_date = new Date(dto.diaryDate);
+      if (dto.diaryDate !== undefined)
+        updateData.diary_date = new Date(dto.diaryDate);
       if (dto.images !== undefined) updateData.images = dto.images;
       if (dto.tags !== undefined) updateData.tags = dto.tags;
       if (dto.weather !== undefined) updateData.weather = dto.weather;
@@ -140,7 +141,10 @@ export class DiaryService {
 
       // 日期范围筛选
       if (dto.startDate && dto.endDate) {
-        where.diary_date = Between(new Date(dto.startDate), new Date(dto.endDate));
+        where.diary_date = Between(
+          new Date(dto.startDate),
+          new Date(dto.endDate),
+        );
       } else if (dto.startDate) {
         where.diary_date = MoreThanOrEqual(new Date(dto.startDate));
       } else if (dto.endDate) {
@@ -160,16 +164,21 @@ export class DiaryService {
           qb.andWhere('diary.mood = :mood', { mood: dto.mood });
         }
         if (dto.startDate) {
-          qb.andWhere('diary.diary_date >= :startDate', { startDate: dto.startDate });
+          qb.andWhere('diary.diary_date >= :startDate', {
+            startDate: dto.startDate,
+          });
         }
         if (dto.endDate) {
           qb.andWhere('diary.diary_date <= :endDate', { endDate: dto.endDate });
         }
 
         // 关键词搜索标题和内容
-        qb.andWhere('(diary.title LIKE :keyword OR diary.content LIKE :keyword)', {
-          keyword: `%${dto.keyword}%`,
-        });
+        qb.andWhere(
+          '(diary.title LIKE :keyword OR diary.content LIKE :keyword)',
+          {
+            keyword: `%${dto.keyword}%`,
+          },
+        );
 
         qb.orderBy('diary.diary_date', 'DESC').addOrderBy('diary.id', 'DESC');
 
@@ -178,7 +187,11 @@ export class DiaryService {
           .take(pageSize)
           .getManyAndCount();
 
-        return { code: 0, msg: 'success', data: { list, total, page, pageSize } };
+        return {
+          code: 0,
+          msg: 'success',
+          data: { list, total, page, pageSize },
+        };
       }
 
       // 普通查询
@@ -213,7 +226,15 @@ export class DiaryService {
       } else {
         const now = new Date();
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+        endDate = new Date(
+          now.getFullYear(),
+          now.getMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999,
+        );
       }
 
       // 统计各情绪数量
@@ -231,7 +252,9 @@ export class DiaryService {
         qb.andWhere('diary.user_id = :userId', { userId });
       }
 
-      const rows = await qb.groupBy('diary.mood').getRawMany<{ mood: string; count: string }>();
+      const rows = await qb
+        .groupBy('diary.mood')
+        .getRawMany<{ mood: string; count: string }>();
 
       // 计算总数和百分比
       const total = rows.reduce((sum, r) => sum + Number(r.count), 0);
@@ -274,7 +297,15 @@ export class DiaryService {
       } else {
         const now = new Date();
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+        endDate = new Date(
+          now.getFullYear(),
+          now.getMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999,
+        );
       }
 
       // 获取该月所有日记的日期和情绪
@@ -365,4 +396,3 @@ export class DiaryService {
     }
   }
 }
-

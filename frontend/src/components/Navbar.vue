@@ -12,22 +12,48 @@
       </div>
     </div>
     <div class="center" v-if="route.name.includes('Index')">
-      <div class="tab-item" :class="{active: route.name === 'Index'}" @click="router.push('/')">首页</div>
-      <div class="tab-item" :class="{active: route.name === 'IndexCat'}" @click="router.push('/index-cat')">宠物</div>
-      <div class="tab-item" :class="{active: route.name === 'IndexFinance'}" @click="router.push('/index-finance')">财务</div>
-      <div class="tab-item" :class="{active: route.name === 'IndexQuiz' || route.name === 'IndexQuizDo' || route.name === 'IndexQuizWrong' || route.name === 'IndexQuizFavorites'}" @click="router.push('/index-quiz')">做题</div>
+      <div class="tab-item" :class="{active: isNavActive('home')}" @click="router.push('/')">个人中心</div>
+      <div class="tab-item" :class="{active: isNavActive('diary')}" @click="router.push('/diary')">日记</div>
+      <div class="tab-item" :class="{active: isNavActive('photos')}" @click="router.push('/photos')">照片墙</div>
+      <div class="tab-item" :class="{active: isNavActive('finance')}" @click="router.push('/finance')">财务</div>
+      <div class="tab-item" :class="{active: isNavActive('study')}" @click="router.push('/study')">学习</div>
     </div>
     <div class="right">
-      <div class="setting" @click="router.push('/quiz-admin')">
-        <el-icon>
-          <Setting />
-        </el-icon>
-      </div>
+      <!-- 管理入口下拉菜单 -->
+      <el-dropdown trigger="click" class="admin-dropdown">
+        <div class="admin-trigger">
+          <el-icon><Setting /></el-icon>
+          <span class="admin-text">管理</span>
+          <el-icon class="arrow"><ArrowDown /></el-icon>
+        </div>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item @click="router.push('/admin/quiz/categories')">
+              <el-icon><Collection /></el-icon>
+              <span style="margin-left: 8px;">题库管理</span>
+            </el-dropdown-item>
+            <el-dropdown-item @click="router.push('/admin/photos/types')">
+              <el-icon><Picture /></el-icon>
+              <span style="margin-left: 8px;">照片管理</span>
+            </el-dropdown-item>
+            <el-dropdown-item @click="router.push('/admin/finance/purpose')">
+              <el-icon><Coin /></el-icon>
+              <span style="margin-left: 8px;">财务管理</span>
+            </el-dropdown-item>
+            <el-dropdown-item divided @click="router.push('/admin/system/users')">
+              <el-icon><Setting /></el-icon>
+              <span style="margin-left: 8px;">系统管理</span>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+      
+      <!-- 用户下拉菜单 -->
       <el-dropdown>
         <span class="user-info">
           {{ username }}
           <el-icon class="el-icon--right">
-            <arrow-down />
+            <ArrowDown />
           </el-icon>
         </span>
         <template #dropdown>
@@ -42,39 +68,69 @@
 </template>
 
 <script setup>
-import { Fold, ArrowDown } from '@element-plus/icons-vue'
-import { ref } from 'vue'
-import userStore from '@/store'
-import { logoutSync } from '@/api/index'
+import { Fold, ArrowDown, Setting, Collection, Picture, Coin, House } from '@element-plus/icons-vue'
+import { ref, computed, onMounted } from 'vue'
+import { useUserStore } from '@/stores/user'
+import { useAppStore } from '@/stores/app'
+import { logoutSync } from '@/api/modules/auth'
 import { useRouter, useRoute } from 'vue-router'
+
 const router = useRouter()
 const route = useRoute()
-const useUserStore = userStore()
+const userStore = useUserStore()
+const appStore = useAppStore()
 
-console.log(route);
+// 导航激活状态判断（优化后的逻辑，便于维护）
+const getActiveNavKey = (routeName) => {
+  if (!routeName) return ''
+  
+  // 首页/个人中心
+  if (routeName === 'Index') return 'home'
+  
+  // 日记模块
+  if (routeName === 'IndexDiary') return 'diary'
+  
+  // 照片墙模块
+  if (routeName === 'IndexCat') return 'photos'
+  
+  // 财务模块
+  if (routeName === 'IndexFinance') return 'finance'
+  
+  // 学习模块（包括所有子页面）
+  if (routeName && (routeName === 'IndexQuiz' || 
+                    routeName === 'IndexQuizDo' || 
+                    routeName === 'IndexQuizWrong' || 
+                    routeName === 'IndexQuizFavorites')) {
+    return 'study'
+  }
+  
+  return ''
+}
 
+// 判断导航项是否激活
+const isNavActive = (navKey) => {
+  return getActiveNavKey(route.name) === navKey
+}
+
+// 侧边栏切换（管理后台使用）
 const toggleSideBar = () => {
-  useUserStore.isCloseSide = !useUserStore.isCloseSide
+  appStore.toggleSidebar()
 }
 
-const username = ref('')
-username.value = JSON.parse(localStorage.getItem('userInfo'))?.username
-let timeTemp = JSON.parse(localStorage.getItem('userInfo'))?.timeTemp
-let currentTime = new Date().getTime()
-if (!username.value || currentTime - timeTemp > 12 * 60 * 60 * 1000) {
-  localStorage.removeItem('userInfo')
+// 用户信息
+const username = computed(() => userStore.username || '用户')
+
+// 初始化用户状态
+onMounted(() => {
+  if (!userStore.isAuthenticated) {
+    userStore.initUser()
+  }
+})
+
+// 登出处理
+const logout = async () => {
+  await userStore.logout()
   router.push('/login')
-}
-
-const logout = () => {
-  logoutSync().then(res => {
-    if (res.code != 0) {
-      alert(res.msg)
-      return
-    }
-    localStorage.removeItem('userInfo')
-    router.push('/login')
-  })
 }
 </script>
 
@@ -108,6 +164,35 @@ const logout = () => {
   justify-content: center;
   width: 30px;
   height: 30px;
+}
+
+.admin-dropdown {
+  margin-right: 8px;
+}
+
+.admin-trigger {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: background 0.2s;
+  font-size: 14px;
+  color: #606266;
+  
+  &:hover {
+    background: #f5f7fa;
+  }
+  
+  .admin-text {
+    font-size: 14px;
+  }
+  
+  .arrow {
+    font-size: 12px;
+    color: #909399;
+  }
 }
 
 .tab-item {

@@ -10,12 +10,13 @@ export class ExcelTemplateController {
   downloadTemplate(@Res() res: Response) {
     try {
       const buffer = this.templateService.getTemplateBuffer();
-      
+
       // 对中文文件名进行URL编码
       const filename = encodeURIComponent('题目导入模板.xlsx');
-      
+
       res.set({
-        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Type':
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': `attachment; filename*=UTF-8''${filename}`,
         'Content-Length': buffer.length.toString(),
       });

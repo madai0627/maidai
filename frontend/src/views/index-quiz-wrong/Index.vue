@@ -1,5 +1,4 @@
 <template>
-  <Navbar />
   <div class="wrong-questions">
     <el-card class="header-card" shadow="hover">
       <div class="header-content">
@@ -64,7 +63,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import Navbar from '../../components/Navbar.vue'
 import { getWrongQuestions, submitQuizAnswer } from '@/api'
 
 const router = useRouter()

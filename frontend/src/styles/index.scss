@@ -1,0 +1,116 @@
+/**
+ * 全局样式文件
+ * 包含公共样式、变量、混入等
+ */
+
+// 颜色变量
+$primary-color: #409EFF;
+$success-color: #67C23A;
+$warning-color: #E6A23C;
+$danger-color: #F56C6C;
+$info-color: #909399;
+
+$text-primary: #303133;
+$text-regular: #606266;
+$text-secondary: #909399;
+$text-placeholder: #C0C4CC;
+
+$border-base: #DCDFE6;
+$border-light: #E4E7ED;
+$border-lighter: #EBEEF5;
+$border-lightest: #F2F6FC;
+
+$bg-color: #F5F7FA;
+$bg-base: #FFFFFF;
+
+// 间距变量
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-xxl: 48px;
+
+// 圆角变量
+$radius-small: 4px;
+$radius-medium: 8px;
+$radius-large: 12px;
+$radius-xlarge: 16px;
+
+// 阴影变量
+$shadow-level-1: 0 1px 4px rgba(0, 0, 0, 0.08);
+$shadow-level-2: 0 2px 8px rgba(0, 0, 0, 0.12);
+$shadow-level-3: 0 4px 16px rgba(0, 0, 0, 0.16);
+$shadow-level-4: 0 8px 24px rgba(0, 0, 0, 0.20);
+
+// 断点变量
+$breakpoint-xs: 0;
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+$breakpoint-xxl: 1920px;
+
+// 混入：卡片样式
+@mixin card-style {
+  background: $bg-base;
+  border-radius: $radius-large;
+  box-shadow: $shadow-level-1;
+  transition: all 0.2s;
+  
+  &:hover {
+    box-shadow: $shadow-level-2;
+  }
+}
+
+// 混入：响应式
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == mobile {
+    @media (max-width: $breakpoint-md - 1px) {
+      @content;
+    }
+  } @else if $breakpoint == tablet {
+    @media (min-width: $breakpoint-md) and (max-width: $breakpoint-lg - 1px) {
+      @content;
+    }
+  } @else if $breakpoint == desktop {
+    @media (min-width: $breakpoint-lg) {
+      @content;
+    }
+  }
+}
+
+// 公共样式
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// 骨架屏动画
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+

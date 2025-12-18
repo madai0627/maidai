@@ -5,5 +5,3 @@ export class CreateRecordDto {
   remark?: string;
   created_at?: Date;
 }
-
-

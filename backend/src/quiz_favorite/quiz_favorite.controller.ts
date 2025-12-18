@@ -11,7 +11,10 @@ export class QuizFavoriteController {
   }
 
   @Delete('remove')
-  removeFavorite(@Query('userId') userId: string, @Query('questionId') questionId: string) {
+  removeFavorite(
+    @Query('userId') userId: string,
+    @Query('questionId') questionId: string,
+  ) {
     return this.service.removeFavorite(Number(userId), Number(questionId));
   }
 
@@ -21,7 +24,10 @@ export class QuizFavoriteController {
   }
 
   @Get('check')
-  isFavorite(@Query('userId') userId: string, @Query('questionId') questionId: string) {
+  isFavorite(
+    @Query('userId') userId: string,
+    @Query('questionId') questionId: string,
+  ) {
     return this.service.isFavorite(Number(userId), Number(questionId));
   }
 }

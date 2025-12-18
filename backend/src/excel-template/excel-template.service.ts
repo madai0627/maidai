@@ -5,7 +5,11 @@ import * as fs from 'fs';
 
 @Injectable()
 export class ExcelTemplateService {
-  private readonly templatePath = path.join(process.cwd(), 'uploads', 'template.xlsx');
+  private readonly templatePath = path.join(
+    process.cwd(),
+    'uploads',
+    'template.xlsx',
+  );
 
   constructor() {
     this.ensureTemplateExists();
@@ -27,7 +31,7 @@ export class ExcelTemplateService {
   private generateTemplate() {
     console.log('开始生成模板文件...');
     console.log('模板路径:', this.templatePath);
-    
+
     // 创建模板数据
     const templateData = [
       ['分类', '题目', '选项A', '选项B', '选项C', '选项D', '正确答案', '难度'],
@@ -35,11 +39,11 @@ export class ExcelTemplateService {
         'JavaScript 基础',
         '以下哪个关键字创建函数表达式？',
         'function 关键字',
-        'let 关键字', 
+        'let 关键字',
         'const 关键字',
         'var 关键字',
         'D',
-        '1'
+        '1',
       ],
       [
         'JavaScript 基础',
@@ -49,7 +53,7 @@ export class ExcelTemplateService {
         'call 可以改变箭头函数 this',
         'bind 会立即执行函数',
         'B',
-        '1'
+        '1',
       ],
       [
         'Vue 框架',
@@ -59,7 +63,7 @@ export class ExcelTemplateService {
         'computed()',
         'watch()',
         'B',
-        '2'
+        '2',
       ],
       [
         '浏览器与性能',
@@ -69,8 +73,8 @@ export class ExcelTemplateService {
         '渲染 -> 宏任务 -> 微任务',
         '宏任务 -> 渲染 -> 微任务',
         'A',
-        '3'
-      ]
+        '3',
+      ],
     ];
 
     console.log('模板数据:', templateData);
@@ -88,7 +92,7 @@ export class ExcelTemplateService {
       { wch: 30 }, // 选项C
       { wch: 30 }, // 选项D
       { wch: 10 }, // 正确答案
-      { wch: 8 }   // 难度
+      { wch: 8 }, // 难度
     ];
     worksheet['!cols'] = colWidths;
 
@@ -96,11 +100,11 @@ export class ExcelTemplateService {
     XLSX.utils.book_append_sheet(workbook, worksheet, '题目模板');
 
     console.log('准备写入文件到:', this.templatePath);
-    
+
     // 使用Buffer方式写入文件
     const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
     fs.writeFileSync(this.templatePath, buffer);
-    
+
     console.log('模板文件生成完成，文件大小:', buffer.length);
   }
 

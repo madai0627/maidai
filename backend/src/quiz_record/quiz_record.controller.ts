@@ -6,12 +6,15 @@ export class QuizRecordController {
   constructor(private readonly service: QuizRecordService) {}
 
   @Post('submit')
-  submitAnswer(@Body() body: {
-    userId: number;
-    questionId: number;
-    userAnswer: string;
-    score?: number;
-  }) {
+  submitAnswer(
+    @Body()
+    body: {
+      userId: number;
+      questionId: number;
+      userAnswer: string;
+      score?: number;
+    },
+  ) {
     return this.service.submitAnswer(body);
   }
 
@@ -26,8 +29,14 @@ export class QuizRecordController {
   }
 
   @Get('recent')
-  getRecentRecords(@Query('userId') userId: string, @Query('limit') limit?: string) {
-    return this.service.getRecentRecords(Number(userId), limit ? Number(limit) : 10);
+  getRecentRecords(
+    @Query('userId') userId: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.service.getRecentRecords(
+      Number(userId),
+      limit ? Number(limit) : 10,
+    );
   }
 
   @Get('category-stats')

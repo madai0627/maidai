@@ -1,4 +1,11 @@
-import { IsString, IsNotEmpty, IsOptional, IsArray, IsIn, IsDateString } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsArray,
+  IsIn,
+  IsDateString,
+} from 'class-validator';
 import { MOOD_TYPES } from '../diary.entity';
 
 /**
@@ -40,4 +47,3 @@ export class CreateDiaryDto {
   @IsString()
   location?: string;
 }
-
