@@ -61,7 +61,7 @@
     <el-pagination
       background
       layout="prev, pager, next, sizes, total"
-      :total="total"
+      :total="total"2
       :page-size="filters.pageSize"
       :current-page="filters.page"
       @current-change="(p)=>{filters.page=p; getList()}"

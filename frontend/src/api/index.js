@@ -25,3 +25,6 @@ export * from './modules/quiz'
 
 // Dashboard API
 export * from './modules/dashboard'
+
+// 学习记录模块 API
+export * from './modules/study'

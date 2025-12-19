@@ -18,7 +18,7 @@
         </div>
         <div class="stat-item">
           <span class="stat-label">今日得分</span>
-          <span class="stat-value">{{ todayStats.todayScore }} 分</span>
+          <span class="stat-value">{{ formatScore(todayStats.todayScore) }} 分</span>
         </div>
         <div class="stat-item">
           <span class="stat-label">今日正确率</span>
@@ -150,9 +150,11 @@ const loadTodayStats = async () => {
   try {
     const res = await getUserQuizStats(userId.value)
     if (res) {
+      // 确保 totalScore 是数字类型，并格式化为两位小数
+      const score = parseFloat(res.totalScore || 0)
       todayStats.value = {
-        todayQuestions: res.totalQuestions || 0,
-        todayScore: res.totalScore || 0,
+        todayQuestions: parseInt(res.totalQuestions || 0),
+        todayScore: isNaN(score) ? 0 : parseFloat(score.toFixed(2)),
         todayAccuracy: res.accuracy || '0.0%'
       }
     }
@@ -290,6 +292,14 @@ const getDifficultyType = (difficulty) => {
 const getDifficultyText = (difficulty) => {
   const texts = { 1: '简单', 2: '中等', 3: '困难' }
   return texts[difficulty] || '未知'
+}
+
+// 格式化得分，确保显示正确
+const formatScore = (score) => {
+  if (score === null || score === undefined) return '0.00'
+  const num = parseFloat(score)
+  if (isNaN(num)) return '0.00'
+  return num.toFixed(2)
 }
 </script>
 

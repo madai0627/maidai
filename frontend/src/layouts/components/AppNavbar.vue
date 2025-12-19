@@ -7,8 +7,8 @@
     <!-- 左侧 Logo -->
     <div class="navbar-left">
       <div class="logo" @click="router.push('/')">
-        <span class="logo-icon">🌾</span>
-        <span class="logo-text">麦袋</span>
+        <span class="logo-icon">🐱</span>
+        <span class="logo-text">麻袋</span>
       </div>
     </div>
     

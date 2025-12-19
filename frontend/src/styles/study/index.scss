@@ -1,0 +1,230 @@
+/**
+ * 学习模块公共样式
+ * 复用全局样式变量，统一学习模块的 UI 风格
+ */
+@import '../index.scss';
+
+// 学习模块专用变量
+$study-primary: #409EFF;
+$study-success: #67C23A;
+$study-warning: #E6A23C;
+$study-danger: #F56C6C;
+
+// 卡片样式（学习模块统一）
+.study-card {
+  @include card-style;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-md;
+    
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: $text-primary;
+      margin: 0;
+    }
+  }
+}
+
+// 功能入口卡片
+.study-entry-card {
+  @include card-style;
+  padding: $spacing-lg;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-level-3;
+  }
+  
+  .entry-icon {
+    font-size: 48px;
+    margin-bottom: $spacing-md;
+  }
+  
+  .entry-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: $text-primary;
+    margin-bottom: $spacing-sm;
+  }
+  
+  .entry-desc {
+    font-size: 14px;
+    color: $text-secondary;
+    margin-bottom: $spacing-md;
+  }
+  
+  .entry-stats {
+    font-size: 24px;
+    font-weight: 600;
+    color: $study-primary;
+  }
+}
+
+// 列表项样式
+.study-list-item {
+  padding: $spacing-md;
+  border-bottom: 1px solid $border-light;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: $bg-color;
+  }
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  .item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-sm;
+  }
+  
+  .item-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: $text-primary;
+  }
+  
+  .item-meta {
+    display: flex;
+    gap: $spacing-md;
+    font-size: 13px;
+    color: $text-secondary;
+  }
+}
+
+// 筛选栏样式
+.study-filter-bar {
+  display: flex;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  background: $bg-base;
+  border-radius: $radius-medium;
+  margin-bottom: $spacing-md;
+  flex-wrap: wrap;
+  
+  .filter-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    
+    label {
+      font-size: 13px;
+      color: $text-secondary;
+      white-space: nowrap;
+    }
+  }
+}
+
+// 空状态样式
+.study-empty {
+  text-align: center;
+  padding: $spacing-xxl;
+  color: $text-secondary;
+  
+  .empty-icon {
+    font-size: 64px;
+    margin-bottom: $spacing-md;
+    opacity: 0.5;
+  }
+  
+  .empty-text {
+    font-size: 14px;
+    margin-bottom: $spacing-md;
+  }
+}
+
+// 统计卡片样式
+.study-stat-card {
+  @include card-style;
+  padding: $spacing-md;
+  text-align: center;
+  
+  .stat-label {
+    font-size: 13px;
+    color: $text-secondary;
+    margin-bottom: $spacing-xs;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: $study-primary;
+  }
+  
+  .stat-trend {
+    font-size: 12px;
+    margin-top: $spacing-xs;
+    
+    &.up {
+      color: $study-success;
+    }
+    
+    &.down {
+      color: $study-danger;
+    }
+  }
+}
+
+// 图表容器样式
+.study-chart-container {
+  @include card-style;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  
+  .chart-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: $text-primary;
+    margin-bottom: $spacing-md;
+  }
+  
+  .chart-wrapper {
+    min-height: 300px;
+  }
+}
+
+// 响应式适配
+@include respond-to(mobile) {
+  .study-entry-card {
+    padding: $spacing-md;
+    
+    .entry-icon {
+      font-size: 36px;
+    }
+    
+    .entry-title {
+      font-size: 16px;
+    }
+  }
+  
+  .study-filter-bar {
+    flex-direction: column;
+    
+    .filter-item {
+      width: 100%;
+      
+      label {
+        min-width: 60px;
+      }
+    }
+  }
+  
+  .study-chart-container {
+    .chart-wrapper {
+      min-height: 200px;
+    }
+  }
+}
+
