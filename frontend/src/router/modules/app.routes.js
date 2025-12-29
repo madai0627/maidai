@@ -76,6 +76,13 @@ export default [
     name: 'StudyStats',
     component: () => import('@/views/study/StudyStats.vue'),
     meta: { title: '学习统计', navKey: 'study' }
+  },
+  // 文档转换工具
+  {
+    path: 'tools/docx-converter',
+    name: 'DocxConverter',
+    component: () => import('@/views/docx/DocxConverter.vue'),
+    meta: { title: '文档转换', navKey: 'tools' }
   }
 ]
 

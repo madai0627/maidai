@@ -18,6 +18,7 @@ import { ExcelTemplateModule } from './excel-template/excel-template.module';
 import { DiaryModule } from './diary/diary.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { StudyRecordModule } from './study_record/study_record.module';
+import { DocxConverterModule } from './docx-converter/docx-converter.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { StudyRecordModule } from './study_record/study_record.module';
     DiaryModule,
     DashboardModule,
     StudyRecordModule,
+    DocxConverterModule,
   ],
   controllers: [AppController],
   providers: [AppService],
