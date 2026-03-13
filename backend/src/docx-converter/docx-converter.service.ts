@@ -3,9 +3,26 @@ import * as mammoth from 'mammoth';
 import * as TurndownService from 'turndown';
 import { gfm } from 'turndown-plugin-gfm';
 import * as MarkdownIt from 'markdown-it';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, AlignmentType } from 'docx';
+import { 
+  Document, 
+  Packer, 
+  Paragraph, 
+  TextRun, 
+  HeadingLevel, 
+  Table, 
+  TableRow, 
+  TableCell, 
+  WidthType, 
+  AlignmentType,
+  ImageRun,
+  VerticalAlign,
+  BorderStyle
+} from 'docx';
 import * as fs from 'fs';
 import { promisify } from 'util';
+import * as https from 'https';
+import * as http from 'http';
+import * as cheerio from 'cheerio';
 
 const unlinkAsync = promisify(fs.unlink);
 const existsAsync = promisify(fs.exists);
@@ -107,11 +124,20 @@ export class DocxConverterService {
    */
   async convertToMarkdown(filePath: string): Promise<string> {
     try {
-      // 使用 mammoth 转换 docx 到 HTML
-      // mammoth 默认会将表格转换为 HTML table 标签
+      // 使用 mammoth 转换 docx 到 HTML，并提取图片
       const result = await mammoth.convertToHtml(
         { path: filePath },
         {
+          // 转换图片为 base64 data URL
+          convertImage: mammoth.images.imgElement((image) => {
+            return image.read('base64').then((imageBuffer) => {
+              const contentType = image.contentType || 'image/png';
+              return {
+                src: `data:${contentType};base64,${imageBuffer}`,
+              };
+            });
+          }),
+          
           styleMap: [
             // 自定义样式映射，保留更多格式
             "p[style-name='Heading 1'] => h1:fresh",
@@ -211,13 +237,23 @@ export class DocxConverterService {
         } else if (token.type === 'paragraph_open') {
           const contentToken = tokens[i + 1];
           if (contentToken && contentToken.type === 'inline') {
-            const runs = this.parseInlineContent(contentToken.children || []);
-            children.push(
-              new Paragraph({
-                children: runs,
-                spacing: { before: 120, after: 120 },
-              }),
-            );
+            // 检查是否包含图片
+            const hasImage = contentToken.children?.some((t: any) => t.type === 'image');
+            
+            if (hasImage) {
+              // 异步处理包含图片的段落
+              const imageParagraphs = await this.parseInlineContentWithImages(contentToken.children || []);
+              children.push(...imageParagraphs);
+            } else {
+              // 普通文本段落
+              const runs = this.parseInlineContent(contentToken.children || []);
+              children.push(
+                new Paragraph({
+                  children: runs,
+                  spacing: { before: 120, after: 120 },
+                }),
+              );
+            }
           }
           i++; // 跳过 content token
         } else if (token.type === 'bullet_list_open' || token.type === 'ordered_list_open') {
@@ -366,10 +402,10 @@ export class DocxConverterService {
   }
 
   /**
-   * 解析内联内容（粗体、斜体等）
+   * 解析内联内容（粗体、斜体、图片等）
    */
-  private parseInlineContent(tokens: any[]): TextRun[] {
-    const runs: TextRun[] = [];
+  private parseInlineContent(tokens: any[]): (TextRun | ImageRun)[] {
+    const runs: (TextRun | ImageRun)[] = [];
 
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
@@ -399,10 +435,149 @@ export class DocxConverterService {
             shading: { fill: 'F3F4F6' },
           }),
         );
+      } else if (token.type === 'image') {
+        // 图片 - 暂时跳过，稍后异步处理
+        // 这里只添加占位符，实际图片需要在外层异步处理
+        runs.push(new TextRun({ text: `[图片: ${token.content}]` }));
       }
     }
 
     return runs;
+  }
+
+  /**
+   * 从 base64 或 URL 获取图片 Buffer
+   * @param src 图片源（base64 data URL 或 http(s) URL）
+   * @returns 图片 Buffer
+   */
+  private async getImageBuffer(src: string): Promise<Buffer | null> {
+    try {
+      // 处理 base64 data URL
+      if (src.startsWith('data:image/')) {
+        const base64Data = src.split(',')[1];
+        if (!base64Data) return null;
+        return Buffer.from(base64Data, 'base64');
+      }
+
+      // 处理 HTTP/HTTPS URL
+      if (src.startsWith('http://') || src.startsWith('https://')) {
+        return await this.downloadImage(src);
+      }
+
+      // 处理本地文件路径
+      if (await existsAsync(src)) {
+        return fs.readFileSync(src);
+      }
+
+      return null;
+    } catch (error) {
+      console.error('获取图片失败:', error);
+      return null;
+    }
+  }
+
+  /**
+   * 下载网络图片
+   * @param url 图片 URL
+   * @returns 图片 Buffer
+   */
+  private downloadImage(url: string): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      const client = url.startsWith('https://') ? https : http;
+      
+      client.get(url, (response) => {
+        if (response.statusCode !== 200) {
+          reject(new Error(`下载图片失败: ${response.statusCode}`));
+          return;
+        }
+
+        const chunks: Buffer[] = [];
+        response.on('data', (chunk) => chunks.push(chunk));
+        response.on('end', () => resolve(Buffer.concat(chunks)));
+        response.on('error', reject);
+      }).on('error', reject);
+    });
+  }
+
+  /**
+   * 解析段落中的图片并创建包含图片的段落
+   * @param tokens inline tokens
+   * @returns Paragraph 数组
+   */
+  private async parseInlineContentWithImages(tokens: any[]): Promise<Paragraph[]> {
+    const paragraphs: Paragraph[] = [];
+    const runs: (TextRun | ImageRun)[] = [];
+
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+
+      if (token.type === 'text') {
+        runs.push(new TextRun({ text: token.content }));
+      } else if (token.type === 'strong_open') {
+        const contentToken = tokens[i + 1];
+        if (contentToken && contentToken.type === 'text') {
+          runs.push(new TextRun({ text: contentToken.content, bold: true }));
+          i += 2;
+        }
+      } else if (token.type === 'em_open') {
+        const contentToken = tokens[i + 1];
+        if (contentToken && contentToken.type === 'text') {
+          runs.push(new TextRun({ text: contentToken.content, italics: true }));
+          i += 2;
+        }
+      } else if (token.type === 'code_inline') {
+        runs.push(
+          new TextRun({
+            text: token.content,
+            font: 'Courier New',
+            shading: { fill: 'F3F4F6' },
+          }),
+        );
+      } else if (token.type === 'image') {
+        // 如果有文本内容，先创建一个段落
+        if (runs.length > 0) {
+          paragraphs.push(new Paragraph({ children: [...runs] }));
+          runs.length = 0;
+        }
+
+        // 处理图片
+        const imageBuffer = await this.getImageBuffer(token.attrGet('src'));
+        if (imageBuffer) {
+          try {
+            paragraphs.push(
+              new Paragraph({
+                children: [
+                  new ImageRun({
+                    data: imageBuffer,
+                    transformation: {
+                      width: 600, // 默认宽度（像素）
+                      height: 400, // 默认高度（像素）
+                    },
+                    type: 'png', // 默认类型
+                  }),
+                ],
+                spacing: { before: 120, after: 120 },
+              }),
+            );
+          } catch (error) {
+            console.error('创建图片失败:', error);
+            // 如果图片创建失败，添加占位文本
+            paragraphs.push(
+              new Paragraph({
+                children: [new TextRun({ text: `[图片加载失败: ${token.content}]` })],
+              }),
+            );
+          }
+        }
+      }
+    }
+
+    // 如果还有剩余的文本内容
+    if (runs.length > 0) {
+      paragraphs.push(new Paragraph({ children: runs }));
+    }
+
+    return paragraphs.length > 0 ? paragraphs : [new Paragraph({ children: [new TextRun('')] })];
   }
 
   /**
@@ -421,4 +596,5 @@ export class DocxConverterService {
     }
   }
 }
+
 

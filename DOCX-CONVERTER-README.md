@@ -12,6 +12,7 @@
 - 📥 **Markdown → docx**: 将编辑后的 Markdown 转回 Word 文档
 - 💾 **多格式下载**: 支持下载 .md 和 .docx 两种格式
 - 🎨 **格式保留**: 保留标题、粗体、斜体、列表、表格等格式
+- 🖼️ **图片支持**: 自动提取和嵌入图片（base64/URL/本地文件）
 
 ## 🛠️ 技术栈
 
@@ -129,7 +130,25 @@ const doc = new Document({
 const buffer = await Packer.toBuffer(doc);
 ```
 
-##### 6. multer `^2.0.2`
+##### 6. cheerio `^1.0.0`
+- **用途**: HTML 解析和操作
+- **功能**:
+  - 服务端 jQuery 实现
+  - 解析 HTML 表格
+  - 提取元素内容
+- **官网**: https://cheerio.js.org/
+- **使用场景**: 解析 Markdown 中的 HTML 表格
+
+```typescript
+import * as cheerio from 'cheerio';
+
+const $ = cheerio.load(html);
+$('tr').each((_, trElement) => {
+  // 处理表格行
+});
+```
+
+##### 7. multer `^2.0.2`
 - **用途**: 处理文件上传
 - **功能**:
   - multipart/form-data 解析
@@ -252,14 +271,16 @@ project/
 [mammoth] 读取 docx 文件，转换为 HTML
     ├── 解析 Word XML 结构
     ├── 应用样式映射
-    └── 生成 HTML
+    ├── 提取图片并转为 base64 ⭐ NEW
+    └── 生成 HTML（包含图片）
     ↓
 [turndown + gfm] 将 HTML 转换为 Markdown
     ├── 处理标题 (h1-h6 → #)
     ├── 处理粗体 (strong → **)
     ├── 处理斜体 (em → *)
     ├── 处理列表 (ul/ol → -/1.)
-    └── 处理表格 (table → markdown table)
+    ├── 处理表格 (table → markdown table)
+    └── 处理图片 (img → ![](data:image/...)) ⭐ NEW
     ↓
 清理和格式化
     ├── 移除多余空行
@@ -268,13 +289,13 @@ project/
     ↓
 返回 Markdown 文本给前端
     ↓
-[marked] 前端渲染预览
+[marked] 前端渲染预览（包含图片）
 ```
 
 ### Markdown → docx
 
 ```
-用户编辑 Markdown 文本
+用户编辑 Markdown 文本（可包含图片）
     ↓
 点击"下载 DOCX"按钮
     ↓
@@ -283,6 +304,7 @@ project/
 [markdown-it] 解析 Markdown 为 tokens
     ├── 识别标题、段落、列表
     ├── 识别粗体、斜体
+    ├── 识别图片 (![](src)) ⭐ NEW
     ├── 识别 HTML 块（表格）
     └── 生成 token 树
     ↓
@@ -291,11 +313,17 @@ project/
     ├── paragraph_open → Paragraph
     ├── strong → TextRun with bold: true
     ├── em → TextRun with italics: true
+    ├── image → ImageRun (处理 base64/URL) ⭐ NEW
     └── html_block (table) → Table
+    ↓
+处理图片（如果有）⭐ NEW
+    ├── base64 → 解码为 Buffer
+    ├── HTTP(S) URL → 下载图片
+    └── 本地路径 → 读取文件
     ↓
 [docx] 生成 Word 文档
     ├── 创建 Document 对象
-    ├── 添加所有元素
+    ├── 添加所有元素（包含图片）
     └── 生成 Buffer
     ↓
 返回二进制数据给前端
@@ -316,6 +344,7 @@ project/
 | 段落 | 空行分隔 | 自动识别段落 |
 | 行内代码 | `` `code` `` | 等宽字体 |
 | 表格 | HTML `<table>` | 支持 HTML 表格 |
+| 图片 ⭐ | `![](src)` | base64/URL/本地文件 |
 
 ### ⚠️ 部分支持
 
@@ -329,7 +358,6 @@ project/
 
 | 格式 | 原因 |
 |------|------|
-| 图片 | docx 和 Markdown 图片处理复杂 |
 | 颜色 | Markdown 不支持颜色 |
 | 字体 | Markdown 不支持字体设置 |
 | 合并单元格 | 实现复杂度高 |
@@ -342,10 +370,10 @@ project/
 cd backend
 
 # 安装依赖
-npm install mammoth turndown turndown-plugin-gfm markdown-it docx
+npm install mammoth turndown turndown-plugin-gfm markdown-it docx cheerio
 
 # 或使用 pnpm
-pnpm install mammoth turndown turndown-plugin-gfm markdown-it docx
+pnpm install mammoth turndown turndown-plugin-gfm markdown-it docx cheerio
 ```
 
 ### 前端安装
@@ -424,6 +452,227 @@ Content-Disposition: attachment; filename="converted_xxx.docx"
 
 [二进制 docx 文件数据]
 ```
+
+## 🖼️ 图片支持详解
+
+### 功能概述
+
+从 v1.1.0 开始，工具完全支持图片的双向转换：
+
+- ✅ **docx → Markdown**: 自动提取图片并转为 base64
+- ✅ **Markdown → docx**: 支持 base64、HTTP(S) URL、本地文件
+
+### docx → Markdown 图片处理
+
+#### 工作原理
+
+```typescript
+// 使用 mammoth 的 convertImage 选项
+convertImage: mammoth.images.imgElement((image) => {
+  return image.read('base64').then((imageBuffer) => {
+    const contentType = image.contentType || 'image/png';
+    return {
+      src: `data:${contentType};base64,${imageBuffer}`,
+    };
+  });
+})
+```
+
+#### 输出格式
+
+```markdown
+![图片描述](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB...)
+```
+
+#### 支持的图片格式
+
+- PNG (.png)
+- JPEG (.jpg, .jpeg)
+- GIF (.gif)
+- BMP (.bmp)
+- TIFF (.tiff)
+
+### Markdown → docx 图片处理
+
+#### 支持的图片源
+
+| 类型 | 格式 | 示例 | 说明 |
+|------|------|------|------|
+| Base64 | `data:image/...;base64,...` | `data:image/png;base64,iVBORw0...` | 直接嵌入图片数据 |
+| HTTPS | `https://...` | `https://example.com/image.png` | 从网络下载 |
+| HTTP | `http://...` | `http://example.com/image.jpg` | 从网络下载 |
+| 本地文件 | 相对/绝对路径 | `./images/photo.jpg` | 服务器端文件 |
+
+#### 处理流程
+
+```typescript
+// 1. 检测图片类型
+if (src.startsWith('data:image/')) {
+  // Base64 解码
+  const base64Data = src.split(',')[1];
+  imageBuffer = Buffer.from(base64Data, 'base64');
+}
+else if (src.startsWith('http')) {
+  // 下载网络图片
+  imageBuffer = await downloadImage(src);
+}
+else {
+  // 读取本地文件
+  imageBuffer = fs.readFileSync(src);
+}
+
+// 2. 创建 ImageRun
+new ImageRun({
+  data: imageBuffer,
+  transformation: {
+    width: 600,  // 默认宽度（像素）
+    height: 400, // 默认高度（像素）
+  },
+  type: 'png',
+})
+```
+
+#### 图片尺寸
+
+默认尺寸：
+- 宽度：600 像素
+- 高度：400 像素（自动保持比例）
+
+可以在代码中调整：
+
+```typescript
+// backend/src/docx-converter/docx-converter.service.ts
+transformation: {
+  width: 800,  // 自定义宽度
+  height: 600, // 自定义高度
+}
+```
+
+### 使用示例
+
+#### 示例 1：上传包含图片的 DOCX
+
+```
+1. 准备一个包含图片的 Word 文档
+2. 上传到转换工具
+3. 查看转换后的 Markdown（图片已转为 base64）
+4. 在预览中可以看到图片正常显示
+```
+
+#### 示例 2：在 Markdown 中插入网络图片
+
+```markdown
+# 我的文档
+
+这是一段文字。
+
+![Logo](https://via.placeholder.com/150)
+
+这是图片后的文字。
+```
+
+#### 示例 3：混合使用多种图片源
+
+```markdown
+# 产品展示
+
+## Base64 图片
+![截图](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB...)
+
+## 网络图片
+![产品图](https://example.com/product.jpg)
+
+## 本地图片（服务器端）
+![Logo](./assets/logo.png)
+```
+
+### 注意事项
+
+#### 1. 文件大小
+
+- 单个 DOCX 文件限制：10MB
+- Base64 会增加约 33% 的数据大小
+- 大量图片可能导致转换变慢
+
+#### 2. 网络图片
+
+- 需要确保 URL 可访问
+- 转换时会实时下载
+- 下载失败会显示占位文本
+- 建议使用 HTTPS
+
+#### 3. 安全性
+
+- 网络图片下载有超时限制
+- 不会执行图片中的脚本
+- Base64 数据会被验证
+
+#### 4. 性能优化建议
+
+- 压缩图片后再上传
+- 避免使用超高分辨率图片
+- 考虑使用 CDN 托管图片
+- 大量图片建议分批处理
+
+### 故障排除
+
+#### 问题：图片不显示
+
+**可能原因：**
+1. Base64 数据损坏
+2. 网络图片 URL 无法访问
+3. 图片格式不支持
+
+**解决方法：**
+1. 检查 Markdown 中的图片 URL 是否完整
+2. 测试图片 URL 是否可以在浏览器中打开
+3. 查看浏览器控制台错误信息
+4. 检查后端日志
+
+#### 问题：转换很慢
+
+**可能原因：**
+1. 图片文件过大
+2. 网络图片下载慢
+3. Base64 编码/解码耗时
+
+**解决方法：**
+1. 压缩图片（推荐 < 500KB）
+2. 使用本地图片或 CDN
+3. 减少图片数量
+
+#### 问题：下载的 DOCX 没有图片
+
+**可能原因：**
+1. 图片 Buffer 创建失败
+2. 图片格式不支持
+3. 内存不足
+
+**解决方法：**
+1. 查看后端日志
+2. 确认图片格式正确
+3. 增加服务器内存限制
+
+### 技术细节
+
+#### 依赖库
+
+```json
+{
+  "mammoth": "^1.8.0",      // 提取 docx 中的图片
+  "docx": "^8.5.0",         // 创建包含图片的 docx
+  "cheerio": "^1.0.0",      // 解析 HTML（图片标签）
+  "https": "built-in",      // 下载网络图片
+  "http": "built-in"        // 下载网络图片
+}
+```
+
+#### 关键代码位置
+
+- 图片提取：`backend/src/docx-converter/docx-converter.service.ts` - `convertToMarkdown()`
+- 图片嵌入：`backend/src/docx-converter/docx-converter.service.ts` - `parseInlineContentWithImages()`
+- 图片下载：`backend/src/docx-converter/docx-converter.service.ts` - `downloadImage()`
+- Buffer 处理：`backend/src/docx-converter/docx-converter.service.ts` - `getImageBuffer()`
 
 ## ⚙️ 配置选项
 
